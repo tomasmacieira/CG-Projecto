@@ -12,11 +12,16 @@ import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 var camera1, camera2, camera3, camera4, camera5, camera6, currentCamera;
 var scene, renderer;
 
+// meshes
+var geometry, mesh, material;
+
 // measures
-var L_base = 3;
-var h_base = 1;
-var L_torre;
-var h_base;
+var L_base = 9;
+var h_base = 3;
+var L_torre = 3;
+var h_torre = 21;
+var L_lanca = 36;
+var h_lanca = 3;
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -28,6 +33,8 @@ function createScene(){
     scene.background = new THREE.Color('skyblue');
 
     scene.add(new THREE.AxesHelper(10));
+
+    createFather(0, 0, 0);
 }
 
 //////////////////////
@@ -117,8 +124,71 @@ function createCamera6() {
 ////////////////////////
 /* CREATE OBJECT3D(S) */
 ////////////////////////
-function createBase() {
-    // TODO
+function createFather(x, y, z) {
+    'use strict';
+
+    var father = new THREE.Object3D();
+
+    material = new THREE.MeshBasicMaterial({ color: 0x663300, wireframe: true });
+
+    addBase(father, 0, 0, 0);
+    addTorre(father, 0, h_torre/2 + h_base/2, 0);
+
+    scene.add(father);
+
+    father.position.x = x;
+    father.position.y = y;
+    father.position.z = z;
+
+    createSon(father, x, y + h_torre/2 + h_base/2, z);
+}
+
+function addBase(obj, x, y, z) {
+    'use strict';
+    // BoxGeometry(width, height, length)
+    geometry = new THREE.BoxGeometry(L_base, h_base, L_base);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
+function addTorre(obj, x, y, z) {
+    'use strict';
+    // BoxGeometry(width, height, length)
+    geometry = new THREE.BoxGeometry(L_torre, h_torre, L_torre);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
+function createSon(obj, x, y, z) {
+    'use strict';
+
+    var son = new THREE.Object3D();
+
+    addLanca(son, x, y, z);
+    // addContralanca();
+    // addPortalanca();
+    // addContrapeso();
+    // addEixorotacao();
+    // addCabine();
+    // addTirante1();
+    // addTirante2();
+
+    obj.add(son);
+
+    son.position.x = x;
+    son.position.y = y;
+    son.position.z = z;
+}
+
+function addLanca(obj, x, y, z) {
+    'use strict';
+    // BoxGeometry(width, height, length)
+    geometry = new THREE.BoxGeometry(L_lanca, h_lanca, h_lanca);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x + L_lanca/2 - L_torre/2, y, z);
+    obj.add(mesh);
 }
 
 //////////////////////

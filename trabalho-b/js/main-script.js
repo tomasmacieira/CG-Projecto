@@ -33,11 +33,15 @@ var L_contrapeso = L_contralanca/2;
 var h_contrapeso = h_contralanca/2;
 var c_contrapeso = L_contrapeso*(2/3);
 
+var L_carro = 3;
+var h_carro = h_eixo;
+var initial_delta1 = 27;
+
 var L_contentor = 20;
 var h_contentor = 8;
 
 // object3Ds
-var father, son;
+var father, son, grandson;
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -158,7 +162,7 @@ function createFather(x, y, z) {
     father.position.y = y;
     father.position.z = z;
 
-    createSon(father, x, y + h_torre/2 + h_base/2, z);
+    createSon(father, 0, h_torre + h_base, 0);
 }
 
 function addBase(obj, x, y, z) {
@@ -183,22 +187,26 @@ function createSon(obj, x, y, z) {
     'use strict';
 
     son = new THREE.Object3D();
-    son.userData = { rotating: false, step: 0.02 } // pi/6 radians
+    son.userData = { rotating: false, step: 0 }
 
-    addEixorotacao(son, x, y, z);
-    addLanca(son, x, y, z);
-    addContralanca(son, x, y, z);
-    addPortalanca(son, x, y, z);
-    addContrapeso(son, x, y, z);
+    addEixorotacao(son, 0, 0, 0);
+    addLanca(son, L_lanca/2 - L_torre/2, h_eixo, 0);
+    addContralanca(son, -L_torre*2, h_eixo, 0);
+    addPortalanca(son, 0, h_eixo*2, 0);
+    addContrapeso(son, -L_torre*(5/2), h_eixo/4, 0);
     // addCabine();
-    // addTirante1();
-    // addTirante2();
+    // addTirante();
+    // addTirante();
+    // addTirante();
+    // addTirante();
 
     obj.add(son);
 
     son.position.x = x;
     son.position.y = y;
     son.position.z = z;
+
+    createGrandson(son, initial_delta1, 0, 0);
 }
 
 function addEixorotacao(obj, x, y, z) {
@@ -215,21 +223,21 @@ function addLanca(obj, x, y, z) {
     // BoxGeometry(width, height, length)
     geometry = new THREE.BoxGeometry(L_lanca, h_lanca, h_lanca);
     mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x + L_lanca/2 - L_torre/2, y + h_eixo, z);
+    mesh.position.set(x, y, z);
     obj.add(mesh);
 }
 
-function addContralanca(obj, x, y, z){
+function addContralanca(obj, x, y, z) {
     'use strict';
     // BoxGeometry(width, height, length)
-    geometry = new THREE.BoxGeometry(L_lanca/4, h_lanca, h_lanca);
+    geometry = new THREE.BoxGeometry(L_contralanca, h_contralanca, h_contralanca);
     mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x - L_torre*2, y + h_eixo, z);
+    mesh.position.set(x, y, z);
     obj.add(mesh);
 }
 
-function addPortalanca(obj, x, y, z){
-    'use strict'
+function addPortalanca(obj, x, y, z) {
+    'use strict';
     geometry = new THREE.BufferGeometry();
     const vertices = new Float32Array( [
         L_torre/2, -h_eixo/2,  L_torre/2,   // v0
@@ -251,16 +259,43 @@ function addPortalanca(obj, x, y, z){
     geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
 
     mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x, y + h_eixo*2, z);
+    mesh.position.set(x, y, z);
     obj.add(mesh);
 }
 
-function addContrapeso(obj, x, y, z){
+function addContrapeso(obj, x, y, z) {
     'use strict';
     // BoxGeometry(width, height, length)
     geometry = new THREE.BoxGeometry(L_contrapeso, h_contrapeso, c_contrapeso - 1);
     mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x - L_torre*(5/2), y + h_eixo/4, z);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
+function createGrandson(obj, x, y, z) {
+    'use strict';
+    
+    grandson = new THREE.Object3D();
+    grandson.userData = { moving: false, step: 0, max_x: L_lanca - initial_delta1 - L_carro,
+                            min_x: -initial_delta1 + L_carro + L_base/3, desloc: 0 }
+
+    addCarro(grandson, 0, 0, 0);
+    // addCabo();
+    // addCabo();
+
+    obj.add(grandson);
+
+    grandson.position.x = x;
+    grandson.position.y = y;
+    grandson.position.z = z;
+}
+
+function addCarro(obj, x, y, z) {
+    'use strict';
+    // BoxGeometry(width, height, length)
+    geometry = new THREE.BoxGeometry(L_carro, h_carro, h_lanca);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
     obj.add(mesh);
 }
 
@@ -315,8 +350,16 @@ function handleCollisions(){
 ////////////
 function update(){
     'use strict';
+
     if (son.userData.rotating) {
         son.rotateOnAxis(new THREE.Vector3(0, 1, 0), son.userData.step);
+    }
+
+    if (grandson.userData.moving &&
+        (grandson.userData.desloc + grandson.userData.step) > grandson.userData.min_x &&
+        (grandson.userData.desloc + grandson.userData.step) < grandson.userData.max_x) {
+            grandson.translateOnAxis(new THREE.Vector3(1, 0, 0), grandson.userData.step);
+            grandson.userData.desloc += grandson.userData.step;
     }
 }
 
@@ -389,6 +432,7 @@ function onKeyDown(e) {
     'use strict';
 
     switch(e.keyCode) {
+        // camera switching
         case 49: // 1
             currentCamera = camera1;
             break;
@@ -411,9 +455,27 @@ function onKeyDown(e) {
             material.wireframe = !material.wireframe;
             containerMaterial.wireframe = !containerMaterial.wireframe;
             break;
+        // superior section rotation
         case 81: // Q
         case 113: // q
             son.userData.rotating = true;
+            son.userData.step = 0.02;
+            break;
+        case 65: // A
+        case 97: // a
+            son.userData.rotating = true;
+            son.userData.step = -0.02;
+            break;
+        // car movement
+        case 87: // W
+        case 119: // w
+            grandson.userData.moving = true;
+            grandson.userData.step = 0.1;
+            break;
+        case 83: // S
+        case 115: // s
+            grandson.userData.moving = true;
+            grandson.userData.step = -0.1;
             break;
     }
 }
@@ -425,9 +487,23 @@ function onKeyUp(e){
     'use strict';
 
     switch(e.keyCode) {
+        // superior section rotation
         case 81: // Q
         case 113: // q
             son.userData.rotating = false;
+            break;
+        case 65: // A
+        case 97: // a
+            son.userData.rotating = false;
+            break;
+        // car movement
+        case 87: // W
+        case 119: // w
+            grandson.userData.moving = false;
+            break;
+        case 83: // S
+        case 115: // s
+            grandson.userData.moving = false;
             break;
     }
 }

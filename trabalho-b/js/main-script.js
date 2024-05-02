@@ -20,6 +20,7 @@ var L_base = 9;
 var h_base = 3;
 var L_torre = 3;
 var h_torre = 21;
+var h_eixo = 3;
 var L_lanca = 36;
 var h_lanca = 3;
 
@@ -166,11 +167,11 @@ function createSon(obj, x, y, z) {
 
     var son = new THREE.Object3D();
 
+    addEixorotacao(son, x, y, z);
     addLanca(son, x, y, z);
     // addContralanca();
     // addPortalanca();
     // addContrapeso();
-    // addEixorotacao();
     // addCabine();
     // addTirante1();
     // addTirante2();
@@ -182,12 +183,21 @@ function createSon(obj, x, y, z) {
     son.position.z = z;
 }
 
+function addEixorotacao(obj, x, y, z) {
+    'use strict';
+    // BoxGeometry(width, height, length)
+    geometry = new THREE.BoxGeometry(L_torre, h_eixo, L_torre);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
 function addLanca(obj, x, y, z) {
     'use strict';
     // BoxGeometry(width, height, length)
     geometry = new THREE.BoxGeometry(L_lanca, h_lanca, h_lanca);
     mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x + L_lanca/2 - L_torre/2, y, z);
+    mesh.position.set(x + L_lanca/2 - L_torre/2, y + h_eixo, z);
     obj.add(mesh);
 }
 

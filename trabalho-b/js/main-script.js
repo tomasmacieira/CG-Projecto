@@ -13,7 +13,7 @@ var camera1, camera2, camera3, camera4, camera5, camera6, currentCamera;
 var scene, renderer;
 
 // meshes
-var geometry, mesh, material;
+var geometry, mesh, material, containerMaterial;
 
 // measures
 var L_base = 9;
@@ -23,6 +23,11 @@ var h_torre = 21;
 var h_eixo = 3;
 var L_lanca = 36;
 var h_lanca = 3;
+
+var L_contentor = 20;
+var h_contentor = 8;
+
+
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -36,6 +41,7 @@ function createScene(){
     scene.add(new THREE.AxesHelper(10));
 
     createFather(0, 0, 0);
+    createContainer(25, 0, 10);
 }
 
 //////////////////////
@@ -201,6 +207,36 @@ function addLanca(obj, x, y, z) {
     obj.add(mesh);
 }
 
+function createContainer(x, y, z) {
+    'use strict';
+
+    var container = new THREE.Object3D();
+    containerMaterial = new THREE.MeshBasicMaterial({ color: 0xfb0000, wireframe: true});
+    scene.add(container);
+
+    addContainerBase(container, x, y, z);
+    addContainerWall(container, x, y + h_contentor / 2, z - h_contentor / 2, L_contentor, h_contentor, 0.3); // PAREDE DIREITA
+    addContainerWall(container, x, y + h_contentor / 2, z + h_contentor / 2, L_contentor, h_contentor, 0.3); // PAREDE ESQUERDA
+    addContainerWall(container, x + L_contentor / 2, y + h_contentor / 2, z, 0.3, h_contentor, h_contentor);
+    addContainerWall(container, x - L_contentor / 2, y + h_contentor / 2, z, 0.3, h_contentor, h_contentor);
+}
+
+function addContainerBase(obj, x, y, z) {
+    'use strict';
+    geometry = new THREE.BoxGeometry(L_contentor, 0.3, h_contentor);
+    mesh = new THREE.Mesh(geometry, containerMaterial);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
+function addContainerWall(obj, x, y, z, largura, altura, espessura) {
+    'use strict';
+    geometry = new THREE.BoxGeometry(largura, altura, espessura);
+    mesh = new THREE.Mesh(geometry, containerMaterial);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
 //////////////////////
 /* CHECK COLLISIONS */
 //////////////////////
@@ -313,6 +349,7 @@ function onKeyDown(e) {
             break;
         case 55: // 7
             material.wireframe = !material.wireframe;
+            containerMaterial.wireframe = !containerMaterial.wireframe;
             break;
     }
 }

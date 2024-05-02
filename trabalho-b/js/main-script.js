@@ -8,9 +8,9 @@ import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 /* GLOBAL VARIABLES */
 //////////////////////
 
-// cameras, scene and renderer
+// cameras, scene, renderer and clock
 var camera1, camera2, camera3, camera4, camera5, camera6, currentCamera;
-var scene, renderer;
+var scene, renderer, clock;
 
 // meshes
 var geometry, mesh, material;
@@ -23,6 +23,9 @@ var h_torre = 21;
 var h_eixo = 3;
 var L_lanca = 36;
 var h_lanca = 3;
+
+// object3Ds
+var father, son;
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -128,7 +131,7 @@ function createCamera6() {
 function createFather(x, y, z) {
     'use strict';
 
-    var father = new THREE.Object3D();
+    father = new THREE.Object3D();
 
     material = new THREE.MeshBasicMaterial({ color: 0x663300, wireframe: true });
 
@@ -165,7 +168,8 @@ function addTorre(obj, x, y, z) {
 function createSon(obj, x, y, z) {
     'use strict';
 
-    var son = new THREE.Object3D();
+    son = new THREE.Object3D();
+    son.userData = { rotating: false, step: 0.02 } // pi/6 radians
 
     addEixorotacao(son, x, y, z);
     addLanca(son, x, y, z);
@@ -185,8 +189,8 @@ function createSon(obj, x, y, z) {
 
 function addEixorotacao(obj, x, y, z) {
     'use strict';
-    // BoxGeometry(width, height, length)
-    geometry = new THREE.BoxGeometry(L_torre, h_eixo, L_torre);
+    // CylinderGeometry(radiusTop, radiusBottom, height, heightSegments)
+    geometry = new THREE.CylinderGeometry(L_torre/2, L_torre/2, h_eixo, 16);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -222,7 +226,9 @@ function handleCollisions(){
 ////////////
 function update(){
     'use strict';
-
+    if (son.userData.rotating) {
+        son.rotateOnAxis(new THREE.Vector3(0, 1, 0), son.userData.step);
+    }
 }
 
 /////////////
@@ -240,6 +246,7 @@ function init() {
     'use strict';
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    clock = new THREE.Clock();
     document.body.appendChild(renderer.domElement);
 
     createScene();
@@ -256,6 +263,7 @@ function init() {
 
     window.addEventListener("resize", onResize);
     window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
 }
 
 /////////////////////
@@ -264,8 +272,7 @@ function init() {
 function animate() {
     'use strict';
 
-    // update();
-
+    update();
     render();
 
     requestAnimationFrame(animate);
@@ -314,6 +321,10 @@ function onKeyDown(e) {
         case 55: // 7
             material.wireframe = !material.wireframe;
             break;
+        case 81: // Q
+        case 113: // q
+            son.userData.rotating = true;
+            break;
     }
 }
 
@@ -322,6 +333,13 @@ function onKeyDown(e) {
 ///////////////////////
 function onKeyUp(e){
     'use strict';
+
+    switch(e.keyCode) {
+        case 81: // Q
+        case 113: // q
+            son.userData.rotating = false;
+            break;
+    }
 }
 
 init();

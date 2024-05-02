@@ -281,7 +281,7 @@ function onResize() {
 ///////////////////////
 function onKeyDown(e) {
     'use strict';
-    
+
     switch(e.keyCode) {
         case 49: // 1
             currentCamera = camera1;
@@ -300,6 +300,9 @@ function onKeyDown(e) {
             break;
         case 54: // 6
             currentCamera = camera6;
+            break;
+        case 55: // 7
+            material.wireframe = !material.wireframe;
             break;
     }
 }

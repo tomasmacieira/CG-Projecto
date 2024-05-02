@@ -13,7 +13,7 @@ var camera1, camera2, camera3, camera4, camera5, camera6, currentCamera;
 var scene, renderer, clock;
 
 // meshes
-var geometry, mesh, material, containerMaterial;
+var geometry, mesh, material, containerMaterial, cylinderCargoMaterial, icosahedronCargoMaterial, sphereCargoMaterial;
 
 // measures
 var L_base = 9;
@@ -57,6 +57,9 @@ function createScene(){
     createFather(0, 0, 0);
     createContainer(25, 0, 10);
 
+    createCylinderCargo(-20, 2, -10);
+    createIcosahedronCargo(10, 2.5, -17);
+    createSphereCargo(-25, 2.5, 15);
 }
 
 //////////////////////
@@ -329,6 +332,59 @@ function addContainerWall(obj, x, y, z, largura, altura, espessura) {
     obj.add(mesh);
 }
 
+function createCylinderCargo(x, y, z) {
+    'use strict';
+
+    var cylinderCargo = new THREE.Object3D();
+    cylinderCargoMaterial = new THREE.MeshBasicMaterial({ color: 0x45c58a, wireframe: true});
+    scene.add(cylinderCargo);
+
+    geometry = new THREE.CylinderGeometry(1, 1, 3, 10);
+    mesh = new THREE.Mesh(geometry, cylinderCargoMaterial);
+    mesh.position.set(x, y, z);
+    cylinderCargo.add(mesh);
+}
+
+function createIcosahedronCargo(x, y, z) {
+    'use strict';
+
+    var isocahedronCargo = new THREE.Object3D();
+    icosahedronCargoMaterial = new THREE.MeshBasicMaterial({color: 0xcc4d97, wireframe: true});
+    scene.add(isocahedronCargo);
+
+    geometry = new THREE.IcosahedronGeometry(3);
+    mesh = new THREE.Mesh(geometry, icosahedronCargoMaterial);
+    mesh.position.set(x, y, z);
+    isocahedronCargo.add(mesh);
+}
+
+function createSphereCargo(x, y, z) {
+    'use strict';
+
+    var sphereCargo = new THREE.Object3D();
+    sphereCargoMaterial = new THREE.MeshBasicMaterial({color: 0xaacc00, wireframe: true});
+    scene.add(sphereCargo);
+
+    const vertices = [
+        - 1, - 1, - 1, 1, - 1, - 1, 1, 1, - 1, - 1, 1, - 1,
+        - 1, - 1, 1, 1, - 1, 1, 1, 1, 1, - 1, 1, 1,
+    ];
+    const indices = [
+        2, 1, 0, 0, 3, 2,
+        0, 4, 7, 7, 3, 0,
+        0, 1, 5, 5, 4, 0,
+        1, 2, 6, 6, 5, 1,
+        2, 3, 7, 7, 6, 2,
+        4, 5, 6, 6, 7, 4,
+    ];
+
+    geometry = new THREE.PolyhedronGeometry(vertices, indices, 3, 2);
+    mesh = new THREE.Mesh(geometry, sphereCargoMaterial);
+    mesh.position.set(x, y, z);
+    sphereCargo.add(mesh);
+    
+}
+
 //////////////////////
 /* CHECK COLLISIONS */
 //////////////////////
@@ -452,8 +508,12 @@ function onKeyDown(e) {
             currentCamera = camera6;
             break;
         case 55: // 7
+            // could be a function  
             material.wireframe = !material.wireframe;
             containerMaterial.wireframe = !containerMaterial.wireframe;
+            cylinderCargoMaterial.wireframe = !cylinderCargoMaterial.wireframe;
+            icosahedronCargoMaterial.wireframe = !icosahedronCargoMaterial.wireframe;
+            sphereCargoMaterial.wireframe = !sphereCargoMaterial.wireframe;
             break;
         // superior section rotation
         case 81: // Q

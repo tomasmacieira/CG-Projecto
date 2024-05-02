@@ -13,7 +13,7 @@ var camera1, camera2, camera3, camera4, camera5, camera6, currentCamera;
 var scene, renderer, clock;
 
 // meshes
-var geometry, mesh, material;
+var geometry, mesh, material, containerMaterial;
 
 // measures
 var L_base = 9;
@@ -23,6 +23,18 @@ var h_torre = 21;
 var h_eixo = 3;
 var L_lanca = 36;
 var h_lanca = 3;
+
+var L_contralanca = L_lanca/4;
+var h_contralanca = h_lanca;
+
+var h_porta_lanca = h_eixo*2;
+
+var L_contrapeso = L_contralanca/2;
+var h_contrapeso = h_contralanca/2;
+var c_contrapeso = L_contrapeso*(2/3);
+
+var L_contentor = 20;
+var h_contentor = 8;
 
 // object3Ds
 var father, son;
@@ -39,6 +51,8 @@ function createScene(){
     scene.add(new THREE.AxesHelper(10));
 
     createFather(0, 0, 0);
+    createContainer(25, 0, 10);
+
 }
 
 //////////////////////
@@ -173,9 +187,9 @@ function createSon(obj, x, y, z) {
 
     addEixorotacao(son, x, y, z);
     addLanca(son, x, y, z);
-    // addContralanca();
-    // addPortalanca();
-    // addContrapeso();
+    addContralanca(son, x, y, z);
+    addPortalanca(son, x, y, z);
+    addContrapeso(son, x, y, z);
     // addCabine();
     // addTirante1();
     // addTirante2();
@@ -202,6 +216,81 @@ function addLanca(obj, x, y, z) {
     geometry = new THREE.BoxGeometry(L_lanca, h_lanca, h_lanca);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x + L_lanca/2 - L_torre/2, y + h_eixo, z);
+    obj.add(mesh);
+}
+
+function addContralanca(obj, x, y, z){
+    'use strict';
+    // BoxGeometry(width, height, length)
+    geometry = new THREE.BoxGeometry(L_lanca/4, h_lanca, h_lanca);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x - L_torre*2, y + h_eixo, z);
+    obj.add(mesh);
+}
+
+function addPortalanca(obj, x, y, z){
+    'use strict'
+    geometry = new THREE.BufferGeometry();
+    const vertices = new Float32Array( [
+        L_torre/2, -h_eixo/2,  L_torre/2,   // v0
+        L_torre/2, -h_eixo/2,  -L_torre/2,  // v1
+        -L_torre/2, -h_eixo/2,  -L_torre/2, // v2
+        -L_torre/2, -h_eixo/2,  L_torre/2,  // v3
+        0, h_porta_lanca - h_eixo/2, 0       // v4
+    ] );
+    const indices = [
+        0, 1, 2,
+        2, 3, 0,
+        0, 4, 1,
+        1, 4, 2,
+        2, 4, 3,
+        3, 4, 0,
+        
+    ];
+    geometry.setIndex( indices );
+    geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y + h_eixo*2, z);
+    obj.add(mesh);
+}
+
+function addContrapeso(obj, x, y, z){
+    'use strict';
+    // BoxGeometry(width, height, length)
+    geometry = new THREE.BoxGeometry(L_contrapeso, h_contrapeso, c_contrapeso - 1);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x - L_torre*(5/2), y + h_eixo/4, z);
+    obj.add(mesh);
+}
+
+function createContainer(x, y, z) {
+    'use strict';
+
+    var container = new THREE.Object3D();
+    containerMaterial = new THREE.MeshBasicMaterial({ color: 0xfb0000, wireframe: true});
+    scene.add(container);
+
+    addContainerBase(container, x, y, z);
+    addContainerWall(container, x, y + h_contentor / 2, z - h_contentor / 2, L_contentor, h_contentor, 0.3); // PAREDE DIREITA
+    addContainerWall(container, x, y + h_contentor / 2, z + h_contentor / 2, L_contentor, h_contentor, 0.3); // PAREDE ESQUERDA
+    addContainerWall(container, x + L_contentor / 2, y + h_contentor / 2, z, 0.3, h_contentor, h_contentor);
+    addContainerWall(container, x - L_contentor / 2, y + h_contentor / 2, z, 0.3, h_contentor, h_contentor);
+}
+
+function addContainerBase(obj, x, y, z) {
+    'use strict';
+    geometry = new THREE.BoxGeometry(L_contentor, 0.3, h_contentor);
+    mesh = new THREE.Mesh(geometry, containerMaterial);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
+function addContainerWall(obj, x, y, z, largura, altura, espessura) {
+    'use strict';
+    geometry = new THREE.BoxGeometry(largura, altura, espessura);
+    mesh = new THREE.Mesh(geometry, containerMaterial);
+    mesh.position.set(x, y, z);
     obj.add(mesh);
 }
 
@@ -320,6 +409,7 @@ function onKeyDown(e) {
             break;
         case 55: // 7
             material.wireframe = !material.wireframe;
+            containerMaterial.wireframe = !containerMaterial.wireframe;
             break;
         case 81: // Q
         case 113: // q

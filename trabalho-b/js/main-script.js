@@ -197,8 +197,9 @@ function createSon(obj, x, y, z) {
     addContralanca(son, -L_torre*2, h_eixo, 0);
     addPortalanca(son, 0, h_eixo*2, 0);
     addContrapeso(son, -L_torre*(5/2), h_eixo/4, 0);
-    // addCabine();
-    // addTirante();
+    addCabine(son, L_torre, h_eixo - 3, 0);
+    //addTirante(son, h_eixo + h_lanca + (h_porta_lanca / 2), 0, L_lanca + (L_torre / 2));
+    //addTirante(son, 5,5,10);
     // addTirante();
     // addTirante();
     // addTirante();
@@ -211,6 +212,27 @@ function createSon(obj, x, y, z) {
 
     createGrandson(son, initial_delta1, 0, 0);
 }
+
+function addCabine(obj, x, y, z) {
+    'use string';
+
+    geometry = new THREE.BoxGeometry(L_torre, 3, L_torre);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
+/* WIP
+function addTirante(obj, x, y, z) {
+    'use strict';
+
+    geometry = new THREE.CylinderGeometry(0.1,0.1,20);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    var angle = Math.PI / 4; // 45 degrees in radians
+    mesh.rotation.z = angle; // Rotate around the Z axis 
+    obj.add(mesh);
+}*/
 
 function addEixorotacao(obj, x, y, z) {
     'use strict';

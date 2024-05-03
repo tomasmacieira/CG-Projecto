@@ -40,6 +40,9 @@ var initial_delta1 = 27;
 var L_contentor = 20;
 var h_contentor = 8;
 
+var c_tirante1 = 35 // calculado à mão
+var c_tirante2 = 12.1;
+
 // object3Ds
 var father, son, grandson;
 
@@ -190,7 +193,7 @@ function createSon(obj, x, y, z) {
     'use strict';
 
     son = new THREE.Object3D();
-    son.userData = { rotating: false, step: 0 }
+    son.userData = { rotating: false, step: 0 } 
 
     addEixorotacao(son, 0, 0, 0);
     addLanca(son, L_lanca/2 - L_torre/2, h_eixo, 0);
@@ -198,14 +201,11 @@ function createSon(obj, x, y, z) {
     addPortalanca(son, 0, h_eixo*2, 0);
     addContrapeso(son, -L_torre*(5/2), h_eixo/4, 0);
     addCabine(son, L_torre, h_eixo - 3, 0);
-    //addTirante(son, h_eixo + h_lanca + (h_porta_lanca / 2), 0, L_lanca + (L_torre / 2));
-    //addTirante(son, 5,5,10);
-    // addTirante();
-    // addTirante();
-    // addTirante();
+    addTirante(son, c_tirante1 / 2 - 0.25, h_porta_lanca + h_lanca / 2 - 0.2, 0, c_tirante1);
+    addTirante2(son, - c_tirante2 / 2 + 0.8, h_porta_lanca + h_lanca / 2 - 0.2, 0, c_tirante2);
 
     obj.add(son);
-
+    son.add(new THREE.AxesHelper(8));
     son.position.x = x;
     son.position.y = y;
     son.position.z = z;
@@ -222,17 +222,30 @@ function addCabine(obj, x, y, z) {
     obj.add(mesh);
 }
 
-/* WIP
-function addTirante(obj, x, y, z) {
+function addTirante(obj, x, y, z, c_tirante) {
     'use strict';
 
-    geometry = new THREE.CylinderGeometry(0.1,0.1,20);
+    geometry = new THREE.CylinderGeometry(0.1,0.1, c_tirante);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
-    var angle = Math.PI / 4; // 45 degrees in radians
+    var angle = ((Math.PI/2) - Math.asin(h_porta_lanca / c_tirante));
     mesh.rotation.z = angle; // Rotate around the Z axis 
+
     obj.add(mesh);
-}*/
+}
+
+function addTirante2(obj, x, y, z, c_tirante) {
+    'use strict';
+
+    geometry = new THREE.CylinderGeometry(0.1,0.1, c_tirante);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    var angle = ((Math.PI/2) - Math.asin(h_porta_lanca / c_tirante));
+    mesh.rotation.z = angle; // Rotate around the Z axis 
+    mesh.rotation.y = Math.PI;
+    obj.add(mesh);
+}
+
 
 function addEixorotacao(obj, x, y, z) {
     'use strict';

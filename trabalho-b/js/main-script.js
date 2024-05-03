@@ -43,6 +43,16 @@ var h_contentor = 8;
 var c_tirante1 = 35 // calculado à mão
 var c_tirante2 = 12.1;
 
+var rt_cabo = 0.1;
+var rb_cabo = 0.1;
+var initial_delta2 = 9;
+
+var L_garra = 3;
+var h_garra = 1.5;
+var c_garra = 3;
+
+var L_dedo = 1;
+
 // object3Ds
 var father, son, grandson;
 
@@ -316,11 +326,16 @@ function createGrandson(obj, x, y, z) {
     
     grandson = new THREE.Object3D();
     grandson.userData = { moving: false, step: 0, max_x: L_lanca - initial_delta1 - L_carro,
-                            min_x: -initial_delta1 + L_carro + L_base/3, desloc: 0 }
+                            min_x: -initial_delta1 + L_carro + L_base/3, desloc: 0,
+                            falling: false, vertical_step: 0, vertical_desloc: initial_delta2 }
 
     addCarro(grandson, 0, 0, 0);
-    // addCabo();
-    // addCabo();
+    addCabo(grandson, 0, -initial_delta2/2, 0);
+    addGarra(grandson, 0, -initial_delta2, 0);
+    addDedo(grandson, L_dedo/2, -initial_delta2 - (h_garra/2), L_dedo/2);
+    addDedo(grandson, L_dedo/2, -initial_delta2 - (h_garra/2), -L_dedo/2);
+    addDedo(grandson, -L_dedo/2, -initial_delta2 - (h_garra/2), L_dedo/2);
+    addDedo(grandson, -L_dedo/2, -initial_delta2 - (h_garra/2), -L_dedo/2);
 
     obj.add(grandson);
 
@@ -335,7 +350,36 @@ function addCarro(obj, x, y, z) {
     geometry = new THREE.BoxGeometry(L_carro, h_carro, h_lanca);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
+    mesh.name = "carro";
     obj.add(mesh);
+}
+
+function addCabo(obj, x, y, z) {
+    'use strict';
+
+    geometry = new THREE.CylinderGeometry(rt_cabo, rb_cabo, initial_delta2);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    var angle = ((Math.PI/2));
+    mesh.name = "cabo";
+    obj.add(mesh);
+}
+
+function addGarra(obj, x, y, z) {
+    'use strict';
+
+    geometry = new THREE.BoxGeometry(L_garra, h_garra, c_garra);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
+function addDedo(obj, x, y, z) {
+    'use strict';
+    geometry = new THREE.TetrahedronGeometry(L_dedo);
+    mesh = new THREE.Mesh(geometry, containerMaterial);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);    
 }
 
 function createContainer(x, y, z) {
@@ -440,6 +484,18 @@ function update(){
         (grandson.userData.desloc + grandson.userData.step) < grandson.userData.max_x) {
             grandson.translateOnAxis(new THREE.Vector3(1, 0, 0), grandson.userData.step);
             grandson.userData.desloc += grandson.userData.step;
+    }
+
+    if (grandson.userData.falling &&
+        (grandson.userData.vertical_desloc + grandson.userData.vertical_step) > 0) {
+        grandson.children.forEach(child => {
+            if (child.name !== "carro") {
+                child.translateOnAxis(new THREE.Vector3(0, 1, 0), grandson.userData.vertical_step)
+            } else if (child.name === "cabo") {
+                
+            }
+        });
+        grandson.userData.vertical_desloc += grandson.userData.vertical_step;
     }
 }
 
@@ -561,6 +617,17 @@ function onKeyDown(e) {
             grandson.userData.moving = true;
             grandson.userData.step = -0.1;
             break;
+        // claw's vertical movement
+        case 69: // E
+        case 101: // e
+            grandson.userData.falling = true;
+            grandson.userData.vertical_step = 0.1;
+            break;
+        case 68: // D
+        case 100: // d
+            grandson.userData.falling = true;
+            grandson.userData.vertical_step = -0.1;
+            break;
     }
 }
 
@@ -588,6 +655,15 @@ function onKeyUp(e){
         case 83: // S
         case 115: // s
             grandson.userData.moving = false;
+            break;
+        // claw's vertical movement
+        case 69: // E
+        case 101: // e
+            grandson.userData.falling = false;
+            break;
+        case 68: // D
+        case 100: // d
+            grandson.userData.falling = false;
             break;
     }
 }

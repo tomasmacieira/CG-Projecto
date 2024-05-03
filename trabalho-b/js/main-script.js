@@ -15,12 +15,15 @@ var scene, renderer, clock;
 // meshes
 var geometry, mesh, material, containerMaterial, dodecahedronCargoMaterial, icosahedronCargoMaterial, torusCargoMaterial;
 
-// measures
+// measurements
 var L_base = 9;
 var h_base = 3;
+
 var L_torre = 3;
 var h_torre = 21;
+
 var h_eixo = 3;
+
 var L_lanca = 36;
 var h_lanca = 3;
 
@@ -35,7 +38,6 @@ var c_contrapeso = 3;
 
 var L_carro = 3;
 var h_carro = 3;
-var initial_delta1 = 27;
 
 var L_contentor = 20;
 var h_contentor = 8;
@@ -43,10 +45,11 @@ var h_contentor = 8;
 var c_tirante1 = 35; // calculado à mão
 var c_tirante2 = 12.1; // calculado à mão
 
-var rt_cabo = 0.1;
+var grandsonStartingX = 27;
+var rt_cabo = 0.1; 
 var rb_cabo = 0.1;
-var initial_delta2 = 9;
 
+var initial_delta2 = 9;
 var L_garra = 3;
 var h_garra = 1.5;
 var c_garra = 3;
@@ -74,7 +77,6 @@ function createScene(){
     createIcosahedronCargo(10, 2.5, -17);
     createTorusCargo(-25, 2.5, 15);
 }
-
 //////////////////////
 /* CREATE CAMERA(S) */
 //////////////////////
@@ -220,7 +222,7 @@ function createSon(obj, x, y, z) {
     son.position.y = y;
     son.position.z = z;
 
-    createGrandson(son, initial_delta1, 0, 0);
+    createGrandson(son, grandsonStartingX, 0, 0);
 }
 
 function addCabine(obj, x, y, z) {
@@ -244,19 +246,6 @@ function addTirante(obj, x, y, z, c_tirante, direction) {
     mesh.rotation.y = Math.PI * direction; // Direction will either be 0 or 1
     obj.add(mesh);
 }
-/*
-function addTirante2(obj, x, y, z, c_tirante) {
-    'use strict';
-
-    geometry = new THREE.CylinderGeometry(0.1,0.1, c_tirante);
-    mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x, y, z);
-    var angle = ((Math.PI/2) - Math.asin(h_porta_lanca / c_tirante));
-    mesh.rotation.z = angle; // Rotate around the Z axis 
-    mesh.rotation.y = Math.PI;
-    obj.add(mesh);
-}*/
-
 
 function addEixorotacao(obj, x, y, z) {
     'use strict';
@@ -325,9 +314,17 @@ function createGrandson(obj, x, y, z) {
     'use strict';
     
     grandson = new THREE.Object3D();
-    grandson.userData = { moving: false, step: 0, max_x: L_lanca - initial_delta1 - L_carro,
-                            min_x: -initial_delta1 + L_carro + L_base/3, desloc: 0,
-                            falling: false, vertical_step: 0, vertical_desloc: initial_delta2 }
+    grandson.userData = { moving: false,
+                        maxCarTranslationLimit: L_lanca - grandsonStartingX - L_carro,
+                        minCarTranslationLimit: - grandsonStartingX + L_carro + L_torre,
+                        horizontal_step: 0,
+                        horizontal_desloc: 0,
+                        cableGoingDown: false,
+                        cableGoingUp: false,
+                        maxCableTranslationLimit: 0, // NEEDS TO BE CHANGED
+                        minCableTranslationLimit: -(h_torre - h_garra - h_carro - 5),  // NEEDS TO BE CHANGED
+                        vertical_step: 0,
+                        vertical_desloc: 0}
 
     addCarro(grandson, 0, 0, 0);
     addCabo(grandson, 0, -initial_delta2/2, 0);
@@ -360,7 +357,6 @@ function addCabo(obj, x, y, z) {
     geometry = new THREE.CylinderGeometry(rt_cabo, rb_cabo, initial_delta2);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
-    var angle = ((Math.PI/2));
     mesh.name = "cabo";
     obj.add(mesh);
 }
@@ -475,27 +471,36 @@ function handleCollisions(){
 function update(){
     'use strict';
 
+    // Lança and contra-lança rotation
     if (son.userData.rotating) {
         son.rotateOnAxis(new THREE.Vector3(0, 1, 0), son.userData.step);
     }
-
+    
+    // Car movement
     if (grandson.userData.moving &&
-        (grandson.userData.desloc + grandson.userData.step) > grandson.userData.min_x &&
-        (grandson.userData.desloc + grandson.userData.step) < grandson.userData.max_x) {
-            grandson.translateOnAxis(new THREE.Vector3(1, 0, 0), grandson.userData.step);
-            grandson.userData.desloc += grandson.userData.step;
+        (grandson.userData.horizontal_desloc + grandson.userData.horizontal_step) < grandson.userData.maxCarTranslationLimit &&
+        (grandson.userData.horizontal_desloc + grandson.userData.horizontal_step) > grandson.userData.minCarTranslationLimit) {
+            grandson.translateOnAxis(new THREE.Vector3(1, 0, 0), grandson.userData.horizontal_step);
+            grandson.userData.horizontal_desloc += grandson.userData.horizontal_step;
     }
 
-    if (grandson.userData.falling &&
-        (grandson.userData.vertical_desloc + grandson.userData.vertical_step) > 0) {
-        grandson.children.forEach(child => {
-            if (child.name !== "carro") {
-                child.translateOnAxis(new THREE.Vector3(0, 1, 0), grandson.userData.vertical_step)
-            } else if (child.name === "cabo") {
-                
-            }
-        });
-        grandson.userData.vertical_desloc += grandson.userData.vertical_step;
+    // Cable going downwards
+    if (grandson.userData.cableGoingDown && 
+        (grandson.userData.vertical_desloc + grandson.userData.vertical_step) > grandson.userData.minCableTranslationLimit) {
+            const mesh = grandson.getObjectByName("cabo");
+            mesh.translateOnAxis(new THREE.Vector3(0, 1, 0), grandson.userData.vertical_step);
+            grandson.userData.vertical_desloc += grandson.userData.vertical_step;
+    }
+
+    
+    // Cable going upwards
+    console.log(grandson.userData.vertical_desloc + grandson.userData.vertical_step);
+    console.log(grandson.userData.maxCableTranslationLimit);
+    if (grandson.userData.cableGoingUp && 
+        (grandson.userData.vertical_desloc + grandson.userData.vertical_step) < grandson.userData.maxCableTranslationLimit) {
+            const mesh = grandson.getObjectByName("cabo");
+            mesh.translateOnAxis(new THREE.Vector3(0, 1, 0), grandson.userData.vertical_step);
+            grandson.userData.vertical_desloc += grandson.userData.vertical_step;
     }
 }
 
@@ -610,22 +615,22 @@ function onKeyDown(e) {
         case 87: // W
         case 119: // w
             grandson.userData.moving = true;
-            grandson.userData.step = 0.1;
+            grandson.userData.horizontal_step = 0.1;
             break;
         case 83: // S
         case 115: // s
             grandson.userData.moving = true;
-            grandson.userData.step = -0.1;
+            grandson.userData.horizontal_step = -0.1;
             break;
         // claw's vertical movement
         case 69: // E
         case 101: // e
-            grandson.userData.falling = true;
+            grandson.userData.cableGoingUp = true;
             grandson.userData.vertical_step = 0.1;
             break;
         case 68: // D
         case 100: // d
-            grandson.userData.falling = true;
+            grandson.userData.cableGoingDown = true;
             grandson.userData.vertical_step = -0.1;
             break;
     }
@@ -659,11 +664,11 @@ function onKeyUp(e){
         // claw's vertical movement
         case 69: // E
         case 101: // e
-            grandson.userData.falling = false;
+            grandson.userData.cableGoingUp = false;
             break;
         case 68: // D
         case 100: // d
-            grandson.userData.falling = false;
+            grandson.userData.cableGoingDown = false;
             break;
     }
 }

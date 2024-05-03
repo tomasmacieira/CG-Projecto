@@ -201,8 +201,8 @@ function createSon(obj, x, y, z) {
     addPortalanca(son, 0, h_eixo*2, 0);
     addContrapeso(son, -L_torre*(5/2), h_eixo/4, 0);
     addCabine(son, L_torre, h_eixo - 3, 0);
-    addTirante(son, c_tirante1 / 2 - 0.25, h_porta_lanca + h_lanca / 2 - 0.2, 0, c_tirante1);
-    addTirante2(son, - c_tirante2 / 2 + 0.8, h_porta_lanca + h_lanca / 2 - 0.2, 0, c_tirante2);
+    addTirante(son, c_tirante1 / 2 - 0.25, h_porta_lanca + h_lanca / 2 - 0.2, 0, c_tirante1, 0);
+    addTirante(son, - c_tirante2 / 2 + 0.8, h_porta_lanca + h_lanca / 2 - 0.2, 0, c_tirante2, 1);
 
     obj.add(son);
     son.add(new THREE.AxesHelper(8));
@@ -222,7 +222,7 @@ function addCabine(obj, x, y, z) {
     obj.add(mesh);
 }
 
-function addTirante(obj, x, y, z, c_tirante) {
+function addTirante(obj, x, y, z, c_tirante, direction) {
     'use strict';
 
     geometry = new THREE.CylinderGeometry(0.1,0.1, c_tirante);
@@ -231,9 +231,10 @@ function addTirante(obj, x, y, z, c_tirante) {
     var angle = ((Math.PI/2) - Math.asin(h_porta_lanca / c_tirante));
     mesh.rotation.z = angle; // Rotate around the Z axis 
 
+    mesh.rotation.y = Math.PI * direction; // Direction will either be 0 or 1
     obj.add(mesh);
 }
-
+/*
 function addTirante2(obj, x, y, z, c_tirante) {
     'use strict';
 
@@ -244,7 +245,7 @@ function addTirante2(obj, x, y, z, c_tirante) {
     mesh.rotation.z = angle; // Rotate around the Z axis 
     mesh.rotation.y = Math.PI;
     obj.add(mesh);
-}
+}*/
 
 
 function addEixorotacao(obj, x, y, z) {

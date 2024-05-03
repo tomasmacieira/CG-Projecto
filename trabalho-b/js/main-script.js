@@ -24,24 +24,24 @@ var h_eixo = 3;
 var L_lanca = 36;
 var h_lanca = 3;
 
-var L_contralanca = L_lanca/4;
-var h_contralanca = h_lanca;
+var L_contralanca = 9;
+var h_contralanca = 3;
 
-var h_porta_lanca = h_eixo*2;
+var h_porta_lanca = 6;
 
-var L_contrapeso = L_contralanca/2;
-var h_contrapeso = h_contralanca/2;
-var c_contrapeso = L_contrapeso*(2/3);
+var L_contrapeso = 4.5;
+var h_contrapeso = 1.5;
+var c_contrapeso = 3;
 
 var L_carro = 3;
-var h_carro = h_eixo;
+var h_carro = 3;
 var initial_delta1 = 27;
 
 var L_contentor = 20;
 var h_contentor = 8;
 
-var c_tirante1 = 35 // calculado à mão
-var c_tirante2 = 12.1;
+var c_tirante1 = 35; // calculado à mão
+var c_tirante2 = 12.1; // calculado à mão
 
 // object3Ds
 var father, son, grandson;
@@ -58,8 +58,8 @@ function createScene(){
     scene.add(new THREE.AxesHelper(10));
 
     createFather(0, 0, 0);
-    createContainer(25, 0, 10);
 
+    createContainer(25, 0, 10);
     createDodecahedronCargo(-20, 2, -10);
     createIcosahedronCargo(10, 2.5, -17);
     createTorusCargo(-25, 2.5, 15);
@@ -196,11 +196,11 @@ function createSon(obj, x, y, z) {
     son.userData = { rotating: false, step: 0 } 
 
     addEixorotacao(son, 0, 0, 0);
-    addLanca(son, L_lanca/2 - L_torre/2, h_eixo, 0);
-    addContralanca(son, -L_torre*2, h_eixo, 0);
-    addPortalanca(son, 0, h_eixo*2, 0);
-    addContrapeso(son, -L_torre*(5/2), h_eixo/4, 0);
-    addCabine(son, L_torre, h_eixo - 3, 0);
+    addLanca(son, L_lanca/2 - L_torre/2, h_lanca, 0);
+    addContralanca(son, -L_torre*2, h_contralanca, 0);
+    addPortalanca(son, 0, h_porta_lanca, 0);
+    addContrapeso(son, -L_torre*(5/2), h_contrapeso/2, 0);
+    addCabine(son, L_torre, 0, 0);
     addTirante(son, c_tirante1 / 2 - 0.25, h_porta_lanca + h_lanca / 2 - 0.2, 0, c_tirante1, 0);
     addTirante(son, - c_tirante2 / 2 + 0.8, h_porta_lanca + h_lanca / 2 - 0.2, 0, c_tirante2, 1);
 

@@ -57,7 +57,7 @@ var c_garra = 3;
 var L_dedo = 1;
 
 // object3Ds
-var father, son, grandson;
+var father, son, grandson, greatgrandson;
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -320,25 +320,18 @@ function createGrandson(obj, x, y, z) {
                         horizontal_step: 0,
                         horizontal_desloc: 0,
                         cableGoingDown: false,
-                        cableGoingUp: false,
-                        maxCableTranslationLimit: 0, // NEEDS TO BE CHANGED
-                        minCableTranslationLimit: -(h_torre - h_garra - h_carro - 5),  // NEEDS TO BE CHANGED
-                        vertical_step: 0,
-                        vertical_desloc: 0}
+                        cableGoingUp: false,}
 
     addCarro(grandson, 0, 0, 0);
     addCabo(grandson, 0, -initial_delta2/2, 0);
-    addGarra(grandson, 0, -initial_delta2, 0);
-    addDedo(grandson, L_dedo/2, -initial_delta2 - (h_garra/2), L_dedo/2);
-    addDedo(grandson, L_dedo/2, -initial_delta2 - (h_garra/2), -L_dedo/2);
-    addDedo(grandson, -L_dedo/2, -initial_delta2 - (h_garra/2), L_dedo/2);
-    addDedo(grandson, -L_dedo/2, -initial_delta2 - (h_garra/2), -L_dedo/2);
 
     obj.add(grandson);
 
     grandson.position.x = x;
     grandson.position.y = y;
     grandson.position.z = z;
+
+    createGreatGrandson(grandson, 0, 0, 0);
 }
 
 function addCarro(obj, x, y, z) {
@@ -359,6 +352,31 @@ function addCabo(obj, x, y, z) {
     mesh.position.set(x, y, z);
     mesh.name = "cabo";
     obj.add(mesh);
+}
+
+function createGreatGrandson(obj, x, y, z) {
+    'use strict';
+    
+    greatgrandson = new THREE.Object3D();
+    greatgrandson.userData = {
+                        cableGoingDown: false,
+                        cableGoingUp: false,
+                        maxCableTranslationLimit: 0, // NEEDS TO BE CHANGED
+                        minCableTranslationLimit: -(h_torre - h_garra - h_carro - 5),  // NEEDS TO BE CHANGED
+                        vertical_step: 0,
+                        vertical_desloc: 0}
+
+    addGarra(greatgrandson, 0, -initial_delta2, 0);
+    addDedo(greatgrandson, L_dedo/2, -initial_delta2 - (h_garra/2), L_dedo/2);
+    addDedo(greatgrandson, L_dedo/2, -initial_delta2 - (h_garra/2), -L_dedo/2);
+    addDedo(greatgrandson, -L_dedo/2, -initial_delta2 - (h_garra/2), L_dedo/2);
+    addDedo(greatgrandson, -L_dedo/2, -initial_delta2 - (h_garra/2), -L_dedo/2);
+
+    obj.add(greatgrandson);
+
+    greatgrandson.position.x = x;
+    greatgrandson.position.y = y;
+    greatgrandson.position.z = z;
 }
 
 function addGarra(obj, x, y, z) {
@@ -473,34 +491,48 @@ function update(){
 
     // Lança and contra-lança rotation
     if (son.userData.rotating) {
-        son.rotateOnAxis(new THREE.Vector3(0, 1, 0), son.userData.step);
+        son.rotateY(son.userData.step);
     }
     
     // Car movement
     if (grandson.userData.moving &&
         (grandson.userData.horizontal_desloc + grandson.userData.horizontal_step) < grandson.userData.maxCarTranslationLimit &&
         (grandson.userData.horizontal_desloc + grandson.userData.horizontal_step) > grandson.userData.minCarTranslationLimit) {
-            grandson.translateOnAxis(new THREE.Vector3(1, 0, 0), grandson.userData.horizontal_step);
+            grandson.translateX(grandson.userData.horizontal_step);
             grandson.userData.horizontal_desloc += grandson.userData.horizontal_step;
     }
 
     // Cable going downwards
-    if (grandson.userData.cableGoingDown && 
-        (grandson.userData.vertical_desloc + grandson.userData.vertical_step) > grandson.userData.minCableTranslationLimit) {
-            const mesh = grandson.getObjectByName("cabo");
-            mesh.translateOnAxis(new THREE.Vector3(0, 1, 0), grandson.userData.vertical_step);
-            grandson.userData.vertical_desloc += grandson.userData.vertical_step;
+    if (greatgrandson.userData.cableGoingDown && 
+        greatgrandson.position.y > greatgrandson.userData.minCableTranslationLimit + L_garra + h_garra) {
+        //(greatgrandson.userData.vertical_desloc + greatgrandson.userData.vertical_step) > greatgrandson.userData.minCableTranslationLimit) {
+            greatgrandson.translateY(/*greatgrandson.userData.vertical_step*/-0.06);
+            grandson.children.forEach (child => {
+                if (child.name === "cabo") {
+                    const scale = 1.005;
+                    child.scale.y *= scale;
+                    child.translateY(/*greatgrandson.userData.vertical_step/2*/-0.03);
+                }
+            });
+            //greatgrandson.userData.vertical_desloc += greatgrandson.userData.vertical_step;
     }
 
     
     // Cable going upwards
-    console.log(grandson.userData.vertical_desloc + grandson.userData.vertical_step);
-    console.log(grandson.userData.maxCableTranslationLimit);
-    if (grandson.userData.cableGoingUp && 
-        (grandson.userData.vertical_desloc + grandson.userData.vertical_step) < grandson.userData.maxCableTranslationLimit) {
-            const mesh = grandson.getObjectByName("cabo");
-            mesh.translateOnAxis(new THREE.Vector3(0, 1, 0), grandson.userData.vertical_step);
-            grandson.userData.vertical_desloc += grandson.userData.vertical_step;
+    console.log(greatgrandson.userData.vertical_desloc + greatgrandson.userData.vertical_step);
+    console.log(greatgrandson.userData.maxCableTranslationLimit);
+    if (greatgrandson.userData.cableGoingUp && 
+        greatgrandson.position.y < (greatgrandson.userData.maxCableTranslationLimit)) {
+        //(greatgrandson.userData.vertical_desloc + greatgrandson.userData.vertical_step) < greatgrandson.userData.maxCableTranslationLimit) {
+            greatgrandson.translateY(/*greatgrandson.userData.vertical_step*/0.06);
+            grandson.children.forEach (child => {
+                if (child.name === "cabo") {
+                    const scale = 1.005;
+                    child.scale.y /= scale;
+                    child.translateY(/*greatgrandson.userData.vertical_step/2*/0.03);
+                }
+            });
+            //greatgrandson.userData.vertical_desloc += greatgrandson.userData.vertical_step;
     }
 }
 
@@ -626,12 +658,14 @@ function onKeyDown(e) {
         case 69: // E
         case 101: // e
             grandson.userData.cableGoingUp = true;
-            grandson.userData.vertical_step = 0.1;
+            greatgrandson.userData.cableGoingUp = true;
+            greatgrandson.userData.vertical_step = 0.06;
             break;
         case 68: // D
         case 100: // d
             grandson.userData.cableGoingDown = true;
-            grandson.userData.vertical_step = -0.1;
+            greatgrandson.userData.cableGoingDown = true;
+            greatgrandson.userData.vertical_step = -0.06;
             break;
     }
 }
@@ -665,10 +699,12 @@ function onKeyUp(e){
         case 69: // E
         case 101: // e
             grandson.userData.cableGoingUp = false;
+            greatgrandson.userData.cableGoingUp = false;
             break;
         case 68: // D
         case 100: // d
             grandson.userData.cableGoingDown = false;
+            greatgrandson.userData.cableGoingDown = false;
             break;
     }
 }

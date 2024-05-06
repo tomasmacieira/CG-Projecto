@@ -144,17 +144,18 @@ function createCamera5() {
     camera5.lookAt(scene.position);
 }
 
-function createCamera6() {
+function createCamera6(x, y, z) {
     'use strict';
     // PerspectiveCamera(fov, aspect, near, far)
     camera6 = new THREE.PerspectiveCamera(70,
         window.innerWidth / window.innerHeight, 1, 1000);
     
     // mobile camera
-    camera6.position.x = 3;
-    camera6.position.y = 50;
-    camera6.position.z = 3;
-    camera6.lookAt(scene.position);
+    greatgrandson.add(camera6)
+    camera6.position.x = x;
+    camera6.position.y = y;
+    camera6.position.z = z;
+    camera6.lookAt(new THREE.Vector3(0, -1000, 0));
 }
 
 /////////////////////
@@ -371,6 +372,7 @@ function createGreatGrandson(obj, x, y, z) {
     addDedo(greatgrandson, L_dedo/2, -initial_delta2 - (h_garra/2), -L_dedo/2);
     addDedo(greatgrandson, -L_dedo/2, -initial_delta2 - (h_garra/2), L_dedo/2);
     addDedo(greatgrandson, -L_dedo/2, -initial_delta2 - (h_garra/2), -L_dedo/2);
+    createCamera6(0, -initial_delta2 - L_dedo, 0);
 
     obj.add(greatgrandson);
 
@@ -560,7 +562,6 @@ function init() {
     createCamera3();
     createCamera4();
     createCamera5();
-    createCamera6();
 
     currentCamera = camera1;
 

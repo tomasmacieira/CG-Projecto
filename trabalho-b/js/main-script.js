@@ -13,7 +13,9 @@ var camera1, camera2, camera3, camera4, camera5, camera6, currentCamera;
 var scene, renderer, clock;
 
 // meshes
-var geometry, mesh, material, containerMaterial, dodecahedronCargoMaterial, icosahedronCargoMaterial, torusCargoMaterial;
+var geometry, eixoMaterial, mesh, material, containerMaterial, containerBaseMaterial, dodecahedronCargoMaterial, icosahedronCargoMaterial, torusCargoMaterial;
+var cabineMaterial, lancaMaterial, contraLancaMaterial, portaLancaMaterial, caboMaterial, tiranteMaterial, contraPesoMaterial, carroMaterial, garraMaterial;
+var baseMaterial;
 
 // bounding volumes
 var garraBoundingSphere, cargo1BoundingSphere, cargo2BoundingSphere, cargo3BoundingSphere;
@@ -175,7 +177,7 @@ function createFather(x, y, z) {
 
     father = new THREE.Object3D();
 
-    material = new THREE.MeshBasicMaterial({ color: 0x663300, wireframe: true });
+    material = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: true });
 
     addBase(father, 0, 0, 0);
     addTorre(father, 0, h_torre/2 + h_base/2, 0);
@@ -192,8 +194,10 @@ function createFather(x, y, z) {
 function addBase(obj, x, y, z) {
     'use strict';
     // BoxGeometry(width, height, length)
+
     geometry = new THREE.BoxGeometry(L_base, h_base, L_base);
-    mesh = new THREE.Mesh(geometry, material);
+    baseMaterial = new THREE.MeshBasicMaterial({ color: 0x322C2B, wireframe: true });
+    mesh = new THREE.Mesh(geometry, baseMaterial);
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -234,7 +238,8 @@ function addCabine(obj, x, y, z) {
     'use string';
 
     geometry = new THREE.BoxGeometry(L_torre, 3, L_torre);
-    mesh = new THREE.Mesh(geometry, material);
+    cabineMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: true });
+    mesh = new THREE.Mesh(geometry, cabineMaterial);
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -243,7 +248,8 @@ function addTirante(obj, x, y, z, c_tirante, direction) {
     'use strict';
 
     geometry = new THREE.CylinderGeometry(0.1,0.1, c_tirante);
-    mesh = new THREE.Mesh(geometry, material);
+    tiranteMaterial = new THREE.MeshBasicMaterial({ color: 0x322C2B, wireframe: true });
+    mesh = new THREE.Mesh(geometry, tiranteMaterial);
     mesh.position.set(x, y, z);
     var angle = ((Math.PI/2) - Math.asin(h_porta_lanca / c_tirante));
     mesh.rotation.z = angle; // Rotate around the Z axis 
@@ -255,8 +261,9 @@ function addTirante(obj, x, y, z, c_tirante, direction) {
 function addEixorotacao(obj, x, y, z) {
     'use strict';
     // CylinderGeometry(radiusTop, radiusBottom, height, heightSegments)
-    geometry = new THREE.CylinderGeometry(L_torre/2, L_torre/2, h_eixo, 16);
-    mesh = new THREE.Mesh(geometry, material);
+    eixoMaterial = new THREE.MeshBasicMaterial({ color: 0xFEEFAD, wireframe: true });
+    geometry = new THREE.CylinderGeometry(L_torre/2 - 0.2, L_torre/2 - 0.2, h_eixo, 16);
+    mesh = new THREE.Mesh(geometry, eixoMaterial);
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -265,7 +272,8 @@ function addLanca(obj, x, y, z) {
     'use strict';
     // BoxGeometry(width, height, length)
     geometry = new THREE.BoxGeometry(L_lanca, h_lanca, h_lanca);
-    mesh = new THREE.Mesh(geometry, material);
+    lancaMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: true });
+    mesh = new THREE.Mesh(geometry, lancaMaterial);
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -274,7 +282,8 @@ function addContralanca(obj, x, y, z) {
     'use strict';
     // BoxGeometry(width, height, length)
     geometry = new THREE.BoxGeometry(L_contralanca, h_contralanca, h_contralanca);
-    mesh = new THREE.Mesh(geometry, material);
+    contraLancaMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: true });
+    mesh = new THREE.Mesh(geometry, contraLancaMaterial);
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -301,7 +310,8 @@ function addPortalanca(obj, x, y, z) {
     geometry.setIndex( indices );
     geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
 
-    mesh = new THREE.Mesh(geometry, material);
+    portaLancaMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: true });
+    mesh = new THREE.Mesh(geometry, portaLancaMaterial);
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -310,7 +320,8 @@ function addContrapeso(obj, x, y, z) {
     'use strict';
     // BoxGeometry(width, height, length)
     geometry = new THREE.BoxGeometry(L_contrapeso, h_contrapeso, c_contrapeso - 1);
-    mesh = new THREE.Mesh(geometry, material);
+    contraPesoMaterial = new THREE.MeshBasicMaterial({ color: 0xF6E9B2, wireframe: true });
+    mesh = new THREE.Mesh(geometry, contraPesoMaterial);
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -341,7 +352,8 @@ function addCarro(obj, x, y, z) {
     'use strict';
     // BoxGeometry(width, height, length)
     geometry = new THREE.BoxGeometry(L_carro, h_carro, h_lanca);
-    mesh = new THREE.Mesh(geometry, material);
+    carroMaterial = new THREE.MeshBasicMaterial({ color: 0xFEEFAD, wireframe: true });
+    mesh = new THREE.Mesh(geometry, carroMaterial);
     mesh.position.set(x, y, z);
     mesh.name = "carro";
     obj.add(mesh);
@@ -351,7 +363,8 @@ function addCabo(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.CylinderGeometry(rt_cabo, rb_cabo, initial_delta2);
-    mesh = new THREE.Mesh(geometry, material);
+    caboMaterial = new THREE.MeshBasicMaterial({ color: 0x322C2B, wireframe: true });
+    mesh = new THREE.Mesh(geometry, caboMaterial);
     mesh.position.set(x, y, z);
     mesh.name = "cabo";
     obj.add(mesh);
@@ -384,9 +397,9 @@ function createGreatGrandson(obj, x, y, z) {
 
 function addGarra(obj, x, y, z) {
     'use strict';
-
     geometry = new THREE.CylinderGeometry(r_garra, r_garra, h_garra, 20);
-    mesh = new THREE.Mesh(geometry, material);
+    garraMaterial = new THREE.MeshBasicMaterial({ color: 0x322C2B, wireframe: true });
+    mesh = new THREE.Mesh(geometry, garraMaterial);
     mesh.position.set(x, y, z);
     mesh.name = "garra";
     obj.add(mesh);
@@ -437,7 +450,7 @@ function createContainer(x, y, z) {
     'use strict';
 
     var container = new THREE.Object3D();
-    containerMaterial = new THREE.MeshBasicMaterial({ color: 0xfb0000, wireframe: true});
+    containerMaterial = new THREE.MeshBasicMaterial({ color: 0xE72929, wireframe: true});
     scene.add(container);
 
     addContainerBase(container, x, y, z);
@@ -450,7 +463,8 @@ function createContainer(x, y, z) {
 function addContainerBase(obj, x, y, z) {
     'use strict';
     geometry = new THREE.BoxGeometry(L_contentor, 0.3, h_contentor);
-    mesh = new THREE.Mesh(geometry, containerMaterial);
+    containerBaseMaterial = new THREE.MeshBasicMaterial({ color: 0xC40C0C, wireframe: true});
+    mesh = new THREE.Mesh(geometry, containerBaseMaterial);
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -708,14 +722,31 @@ function onKeyDown(e) {
             break;
         case 54: // 6
             currentCamera = camera6;
-            break;
+        break;
         case 55: // 7
-            // could be a function  
-            material.wireframe = !material.wireframe;
-            containerMaterial.wireframe = !containerMaterial.wireframe;
-            dodecahedronCargoMaterial.wireframe = !dodecahedronCargoMaterial.wireframe;
-            icosahedronCargoMaterial.wireframe = !icosahedronCargoMaterial.wireframe;
-            torusCargoMaterial.wireframe = !torusCargoMaterial.wireframe;
+            var materials = [
+                baseMaterial,
+                material,
+                containerMaterial,
+                dodecahedronCargoMaterial,
+                icosahedronCargoMaterial,
+                torusCargoMaterial,
+                containerBaseMaterial,
+                eixoMaterial,
+                cabineMaterial,
+                lancaMaterial,
+                contraLancaMaterial,
+                portaLancaMaterial,
+                caboMaterial,
+                tiranteMaterial,
+                carroMaterial,
+                contraPesoMaterial,
+                garraMaterial
+                ];
+        
+            materials.forEach(function(mat) {
+                mat.wireframe = !mat.wireframe;
+            });
             break;
         // superior section rotation
         case 81: // Q

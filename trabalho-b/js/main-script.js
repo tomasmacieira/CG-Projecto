@@ -16,7 +16,7 @@ var scene, renderer, clock;
 var geometry, mesh, material, containerMaterial, dodecahedronCargoMaterial, icosahedronCargoMaterial, torusCargoMaterial;
 
 // bounding volumes
-var garraBoundingSphere;
+var garraBoundingSphere, cargo1BoundingSphere, cargo2BoundingSphere, cargo3BoundingSphere;
 
 // measurements
 var L_base = 9;
@@ -157,7 +157,7 @@ function createCamera6(x, y, z) {
     camera6.position.x = x;
     camera6.position.y = y;
     camera6.position.z = z;
-    camera6.lookAt(new THREE.Vector3(0, -1000, 0));
+    camera6.rotation.x = -Math.PI/2
 }
 
 /////////////////////
@@ -176,7 +176,6 @@ function createFather(x, y, z) {
 
     addBase(father, 0, 0, 0);
     addTorre(father, 0, h_torre/2 + h_base/2, 0);
-    addDedo(father, 0, 0, 0);
 
     scene.add(father);
 
@@ -442,8 +441,8 @@ function createDodecahedronCargo(x, y, z) {
     mesh.position.set(x, y, z);
     dodecahedronCargo.add(mesh);
 
-    var boundingSphere1 = new THREE.Sphere(mesh.position, 3);
-    console.log(boundingSphere1);
+    cargo1BoundingSphere = new THREE.Sphere(mesh.position, 3);
+    console.log(cargo1BoundingSphere);
 }
 
 function createIcosahedronCargo(x, y, z) {
@@ -458,8 +457,8 @@ function createIcosahedronCargo(x, y, z) {
     mesh.position.set(x, y, z);
     isocahedronCargo.add(mesh);
 
-    var boundingSphere2 = new THREE.Sphere(mesh.position, 3);
-    console.log(boundingSphere2);
+    cargo2BoundingSphere = new THREE.Sphere(mesh.position, 3);
+    console.log(cargo2BoundingSphere);
 }
 
 function createTorusCargo(x, y, z) {
@@ -474,8 +473,8 @@ function createTorusCargo(x, y, z) {
     mesh.position.set(x, y, z);
     torusCargo.add(mesh);
 
-    var boundingSphere3 = new THREE.Sphere(mesh.position, 3);
-    console.log(boundingSphere3);
+    cargo3BoundingSphere = new THREE.Sphere(mesh.position, 3);
+    console.log(cargo3BoundingSphere);
 }
 
 //////////////////////
@@ -502,34 +501,30 @@ function update(){
 
     var timeElapsed = clock.getDelta();
 
-    /* greatgrandson.children.forEach (child => {
+    greatgrandson.children.forEach (child => {
         if (child.name === "garra") {
-            garraBoundingSphere.copy(child.geometry.boundingSphere).applyMatrix4(child.matrixWorld);
+            // atualizar posição da esfera
         }
-    }) */
+    })
 
     // Top section rotation
     if (son.userData.positiveRotation) {
         son.rotateY(son.userData.speed * timeElapsed);
-        //console.log(garraBoundingSphere);
     }
 
     if (son.userData.negativeRotation) {
         son.rotateY(-(son.userData.speed * timeElapsed));
-        //console.log(garraBoundingSphere);
     }
     
     // Car movement
     if (grandson.userData.movingOut && (grandson.userData.horizontal_desloc < grandson.userData.maxCarTranslationLimit)) {
         grandson.translateX(grandson.userData.horizontal_speed * timeElapsed);
         grandson.userData.horizontal_desloc += (grandson.userData.horizontal_speed * timeElapsed);
-        //console.log(garraBoundingSphere);
     }
 
     if (grandson.userData.movingIn && (grandson.userData.horizontal_desloc > grandson.userData.minCarTranslationLimit)) {
         grandson.translateX(-(grandson.userData.horizontal_speed * timeElapsed));
         grandson.userData.horizontal_desloc -= (grandson.userData.horizontal_speed * timeElapsed);
-        //console.log(garraBoundingSphere);
     }
     
     // Cable going upwards
@@ -542,7 +537,6 @@ function update(){
                 }
             });
             greatgrandson.userData.vertical_desloc += greatgrandson.userData.vertical_speed * timeElapsed;
-            //console.log(garraBoundingSphere);
     }
 
     // Cable going downwards
@@ -555,7 +549,6 @@ function update(){
                 }
             });
             greatgrandson.userData.vertical_desloc -= greatgrandson.userData.vertical_speed * timeElapsed;
-            //console.log(garraBoundingSphere);
     }
 }
 

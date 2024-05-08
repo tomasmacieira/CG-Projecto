@@ -174,6 +174,7 @@ function createFather(x, y, z) {
 
     addBase(father, 0, 0, 0);
     addTorre(father, 0, h_torre/2 + h_base/2, 0);
+    addDedo(father, 0, 0, 0);
 
     scene.add(father);
 
@@ -206,7 +207,7 @@ function createSon(obj, x, y, z) {
     'use strict';
 
     son = new THREE.Object3D();
-    son.userData = { rotating: false, step: 0 } 
+    son.userData = { positiveRotation: false, negativeRotation: false, speed: 0.8 } 
 
     addEixorotacao(son, 0, 0, 0);
     addLanca(son, L_lanca/2 - L_torre/2, h_lanca, 0);
@@ -218,7 +219,6 @@ function createSon(obj, x, y, z) {
     addTirante(son, - c_tirante2 / 2 + 0.8, h_porta_lanca + h_lanca / 2 - 0.2, 0, c_tirante2, 1);
 
     obj.add(son);
-    son.add(new THREE.AxesHelper(8));
     son.position.x = x;
     son.position.y = y;
     son.position.z = z;
@@ -315,13 +315,11 @@ function createGrandson(obj, x, y, z) {
     'use strict';
     
     grandson = new THREE.Object3D();
-    grandson.userData = { moving: false,
+    grandson.userData = {movingOut: false, movingIn: false,
                         maxCarTranslationLimit: L_lanca - grandsonStartingX - L_carro,
                         minCarTranslationLimit: - grandsonStartingX + L_carro + L_torre,
-                        horizontal_step: 0,
-                        horizontal_desloc: 0,
-                        cableGoingDown: false,
-                        cableGoingUp: false,}
+                        horizontal_speed: 5,
+                        horizontal_desloc: 0}
 
     addCarro(grandson, 0, 0, 0);
     addCabo(grandson, 0, -initial_delta2/2, 0);
@@ -359,12 +357,10 @@ function createGreatGrandson(obj, x, y, z) {
     'use strict';
     
     greatgrandson = new THREE.Object3D();
-    greatgrandson.userData = {
-                        cableGoingDown: false,
-                        cableGoingUp: false,
-                        maxCableTranslationLimit: 0, // NEEDS TO BE CHANGED
-                        minCableTranslationLimit: -(h_torre - h_garra - h_carro - 5),  // NEEDS TO BE CHANGED
-                        vertical_step: 0,
+    greatgrandson.userData = {cableGoingDown: false, cableGoingUp: false,
+                        maxCableTranslationLimit: h_garra * 2,
+                        minCableTranslationLimit: -(h_torre/2),
+                        vertical_speed: 5,
                         vertical_desloc: 0}
 
     addGarra(greatgrandson, 0, -initial_delta2, 0);
@@ -491,50 +487,55 @@ function handleCollisions(){
 function update(){
     'use strict';
 
-    // Lança and contra-lança rotation
-    if (son.userData.rotating) {
-        son.rotateY(son.userData.step);
+    var timeElapsed = clock.getDelta();
+
+    // Top section rotation
+    if (son.userData.positiveRotation) {
+        son.rotateY(son.userData.speed * timeElapsed);
+    }
+
+    if (son.userData.negativeRotation) {
+        son.rotateY(-(son.userData.speed * timeElapsed));
     }
     
     // Car movement
-    if (grandson.userData.moving &&
-        (grandson.userData.horizontal_desloc + grandson.userData.horizontal_step) < grandson.userData.maxCarTranslationLimit &&
-        (grandson.userData.horizontal_desloc + grandson.userData.horizontal_step) > grandson.userData.minCarTranslationLimit) {
-            grandson.translateX(grandson.userData.horizontal_step);
-            grandson.userData.horizontal_desloc += grandson.userData.horizontal_step;
+    if (grandson.userData.movingOut && (grandson.userData.horizontal_desloc < grandson.userData.maxCarTranslationLimit)) {
+        grandson.translateX(grandson.userData.horizontal_speed * timeElapsed);
+        grandson.userData.horizontal_desloc += (grandson.userData.horizontal_speed * timeElapsed);
+    }
+
+    if (grandson.userData.movingIn && (grandson.userData.horizontal_desloc > grandson.userData.minCarTranslationLimit)) {
+        grandson.translateX(-(grandson.userData.horizontal_speed * timeElapsed));
+        grandson.userData.horizontal_desloc -= (grandson.userData.horizontal_speed * timeElapsed);
+    }
+    
+    // Cable going upwards
+    if (greatgrandson.userData.cableGoingUp && (greatgrandson.userData.vertical_desloc < greatgrandson.userData.maxCableTranslationLimit)) {
+            greatgrandson.translateY(greatgrandson.userData.vertical_speed * timeElapsed);
+            grandson.children.forEach (child => {
+                if (child.name === "cabo") {
+                    const scale = 1.007;
+                    child.scale.y /= scale;
+                    //child.scale.y -= ((greatgrandson.userData.vertical_speed * timeElapsed)/2);
+                    //child.geometry.dispose();
+                    //child.geometry = new THREE.CylinderGeometry(rt_cabo, rb_cabo, (greatgrandson.userData.vertical_speed * timeElapsed));
+                    child.translateY((greatgrandson.userData.vertical_speed * timeElapsed)/2);
+                }
+            });
+            greatgrandson.userData.vertical_desloc += greatgrandson.userData.vertical_speed * timeElapsed;
     }
 
     // Cable going downwards
-    if (greatgrandson.userData.cableGoingDown && 
-        greatgrandson.position.y > greatgrandson.userData.minCableTranslationLimit + L_garra + h_garra) {
-        //(greatgrandson.userData.vertical_desloc + greatgrandson.userData.vertical_step) > greatgrandson.userData.minCableTranslationLimit) {
-            greatgrandson.translateY(/*greatgrandson.userData.vertical_step*/-0.06);
+    if (greatgrandson.userData.cableGoingDown && (greatgrandson.userData.vertical_desloc > greatgrandson.userData.minCableTranslationLimit)) {
+            greatgrandson.translateY(-(greatgrandson.userData.vertical_speed * timeElapsed));
             grandson.children.forEach (child => {
                 if (child.name === "cabo") {
-                    const scale = 1.005;
+                    const scale = 1.007;
                     child.scale.y *= scale;
-                    child.translateY(/*greatgrandson.userData.vertical_step/2*/-0.03);
+                    child.translateY(-((greatgrandson.userData.vertical_speed * timeElapsed)/2));
                 }
             });
-            //greatgrandson.userData.vertical_desloc += greatgrandson.userData.vertical_step;
-    }
-
-    
-    // Cable going upwards
-    console.log(greatgrandson.userData.vertical_desloc + greatgrandson.userData.vertical_step);
-    console.log(greatgrandson.userData.maxCableTranslationLimit);
-    if (greatgrandson.userData.cableGoingUp && 
-        greatgrandson.position.y < (greatgrandson.userData.maxCableTranslationLimit)) {
-        //(greatgrandson.userData.vertical_desloc + greatgrandson.userData.vertical_step) < greatgrandson.userData.maxCableTranslationLimit) {
-            greatgrandson.translateY(/*greatgrandson.userData.vertical_step*/0.06);
-            grandson.children.forEach (child => {
-                if (child.name === "cabo") {
-                    const scale = 1.005;
-                    child.scale.y /= scale;
-                    child.translateY(/*greatgrandson.userData.vertical_step/2*/0.03);
-                }
-            });
-            //greatgrandson.userData.vertical_desloc += greatgrandson.userData.vertical_step;
+            greatgrandson.userData.vertical_desloc -= greatgrandson.userData.vertical_speed * timeElapsed;
     }
 }
 
@@ -636,37 +637,29 @@ function onKeyDown(e) {
         // superior section rotation
         case 81: // Q
         case 113: // q
-            son.userData.rotating = true;
-            son.userData.step = 0.02;
+            son.userData.positiveRotation = true;
             break;
         case 65: // A
         case 97: // a
-            son.userData.rotating = true;
-            son.userData.step = -0.02;
+            son.userData.negativeRotation = true;
             break;
         // car movement
         case 87: // W
         case 119: // w
-            grandson.userData.moving = true;
-            grandson.userData.horizontal_step = 0.1;
+            grandson.userData.movingOut = true;
             break;
         case 83: // S
         case 115: // s
-            grandson.userData.moving = true;
-            grandson.userData.horizontal_step = -0.1;
+            grandson.userData.movingIn = true;
             break;
         // claw's vertical movement
         case 69: // E
         case 101: // e
-            grandson.userData.cableGoingUp = true;
             greatgrandson.userData.cableGoingUp = true;
-            greatgrandson.userData.vertical_step = 0.06;
             break;
         case 68: // D
         case 100: // d
-            grandson.userData.cableGoingDown = true;
             greatgrandson.userData.cableGoingDown = true;
-            greatgrandson.userData.vertical_step = -0.06;
             break;
     }
 }
@@ -681,30 +674,28 @@ function onKeyUp(e){
         // superior section rotation
         case 81: // Q
         case 113: // q
-            son.userData.rotating = false;
+            son.userData.positiveRotation = false;
             break;
         case 65: // A
         case 97: // a
-            son.userData.rotating = false;
+            son.userData.negativeRotation = false;
             break;
         // car movement
         case 87: // W
         case 119: // w
-            grandson.userData.moving = false;
+            grandson.userData.movingOut = false;
             break;
         case 83: // S
         case 115: // s
-            grandson.userData.moving = false;
+            grandson.userData.movingIn = false;
             break;
         // claw's vertical movement
         case 69: // E
         case 101: // e
-            grandson.userData.cableGoingUp = false;
             greatgrandson.userData.cableGoingUp = false;
             break;
         case 68: // D
         case 100: // d
-            grandson.userData.cableGoingDown = false;
             greatgrandson.userData.cableGoingDown = false;
             break;
     }

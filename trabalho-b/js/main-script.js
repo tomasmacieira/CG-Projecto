@@ -18,9 +18,6 @@ var geometry, mesh, material, containerMaterial, dodecahedronCargoMaterial, icos
 // bounding volumes
 var garraBoundingSphere;
 
-// special parts
-var garra;
-
 // measurements
 var L_base = 9;
 var h_base = 3;
@@ -387,8 +384,8 @@ function addGarra(obj, x, y, z) {
 
     geometry = new THREE.BoxGeometry(L_garra, h_garra, L_garra);
     mesh = new THREE.Mesh(geometry, material);
-    // garra = mesh;
     mesh.position.set(x, y, z);
+    mesh.name = "garra";
     obj.add(mesh);
 
     garraBoundingSphere = new THREE.Sphere(mesh.position, L_garra);
@@ -445,8 +442,8 @@ function createDodecahedronCargo(x, y, z) {
     mesh.position.set(x, y, z);
     dodecahedronCargo.add(mesh);
 
-    var boundingSphere = new THREE.Sphere(mesh.position, 3);
-    console.log(boundingSphere);
+    var boundingSphere1 = new THREE.Sphere(mesh.position, 3);
+    console.log(boundingSphere1);
 }
 
 function createIcosahedronCargo(x, y, z) {
@@ -460,6 +457,9 @@ function createIcosahedronCargo(x, y, z) {
     mesh = new THREE.Mesh(geometry, icosahedronCargoMaterial);
     mesh.position.set(x, y, z);
     isocahedronCargo.add(mesh);
+
+    var boundingSphere2 = new THREE.Sphere(mesh.position, 3);
+    console.log(boundingSphere2);
 }
 
 function createTorusCargo(x, y, z) {
@@ -473,6 +473,9 @@ function createTorusCargo(x, y, z) {
     mesh = new THREE.Mesh(geometry, torusCargoMaterial);
     mesh.position.set(x, y, z);
     torusCargo.add(mesh);
+
+    var boundingSphere3 = new THREE.Sphere(mesh.position, 3);
+    console.log(boundingSphere3);
 }
 
 //////////////////////
@@ -499,27 +502,34 @@ function update(){
 
     var timeElapsed = clock.getDelta();
 
-    //garraBoundingSphere.copy(garra.geometry.boundingSphere).applyMatrix4(garra.matrixWorld);
-    //console.log(garraBoundingSphere);
+    /* greatgrandson.children.forEach (child => {
+        if (child.name === "garra") {
+            garraBoundingSphere.copy(child.geometry.boundingSphere).applyMatrix4(child.matrixWorld);
+        }
+    }) */
 
     // Top section rotation
     if (son.userData.positiveRotation) {
         son.rotateY(son.userData.speed * timeElapsed);
+        //console.log(garraBoundingSphere);
     }
 
     if (son.userData.negativeRotation) {
         son.rotateY(-(son.userData.speed * timeElapsed));
+        //console.log(garraBoundingSphere);
     }
     
     // Car movement
     if (grandson.userData.movingOut && (grandson.userData.horizontal_desloc < grandson.userData.maxCarTranslationLimit)) {
         grandson.translateX(grandson.userData.horizontal_speed * timeElapsed);
         grandson.userData.horizontal_desloc += (grandson.userData.horizontal_speed * timeElapsed);
+        //console.log(garraBoundingSphere);
     }
 
     if (grandson.userData.movingIn && (grandson.userData.horizontal_desloc > grandson.userData.minCarTranslationLimit)) {
         grandson.translateX(-(grandson.userData.horizontal_speed * timeElapsed));
         grandson.userData.horizontal_desloc -= (grandson.userData.horizontal_speed * timeElapsed);
+        //console.log(garraBoundingSphere);
     }
     
     // Cable going upwards
@@ -532,6 +542,7 @@ function update(){
                 }
             });
             greatgrandson.userData.vertical_desloc += greatgrandson.userData.vertical_speed * timeElapsed;
+            //console.log(garraBoundingSphere);
     }
 
     // Cable going downwards
@@ -544,6 +555,7 @@ function update(){
                 }
             });
             greatgrandson.userData.vertical_desloc -= greatgrandson.userData.vertical_speed * timeElapsed;
+            //console.log(garraBoundingSphere);
     }
 }
 

@@ -53,10 +53,13 @@ var rt_cabo = 0.1;
 var rb_cabo = 0.1;
 
 var initial_delta2 = 9;
-var L_garra = 3;
-var h_garra = 1.5;
+var r_garra = 1.5;
+var h_garra = 1;
 
-var L_dedo = 1;
+var L_dedo_body = 0.5;
+var h_dedo_body = 0.75;
+var L_dedo_tip = 0.5;
+var h_dedo_tip = 0.5;
 
 // object3Ds
 var father, son, grandson, greatgrandson;
@@ -361,15 +364,16 @@ function createGreatGrandson(obj, x, y, z) {
     greatgrandson.userData = {cableGoingDown: false, cableGoingUp: false,
                         maxCableTranslationLimit: h_garra * 2,
                         minCableTranslationLimit: -(h_torre/2),
-                        vertical_speed: 5,
-                        vertical_desloc: 0}
+                        vertical_speed: 5, vertical_desloc: 0,
+                        openClaw: false, closeClaw: false,
+                        claw_speed: 0.005}
 
     addGarra(greatgrandson, 0, -initial_delta2, 0);
-    addDedo(greatgrandson, L_dedo/2, -initial_delta2 - (h_garra/2), L_dedo/2);
-    addDedo(greatgrandson, L_dedo/2, -initial_delta2 - (h_garra/2), -L_dedo/2);
-    addDedo(greatgrandson, -L_dedo/2, -initial_delta2 - (h_garra/2), L_dedo/2);
-    addDedo(greatgrandson, -L_dedo/2, -initial_delta2 - (h_garra/2), -L_dedo/2);
-    createCamera6(0, -initial_delta2 - L_dedo, 0);
+    addDedo(greatgrandson, -L_dedo_body/2 - L_dedo_tip, -initial_delta2 - (h_garra/2) - h_dedo_body/2, L_dedo_body/2 + L_dedo_tip, '1');
+    addDedo(greatgrandson, L_dedo_body/2 + L_dedo_tip, -initial_delta2 - (h_garra/2) - h_dedo_body/2, L_dedo_body/2 + L_dedo_tip, '2');
+    addDedo(greatgrandson, L_dedo_body/2 + L_dedo_tip, -initial_delta2 - (h_garra/2) - h_dedo_body/2, -L_dedo_body/2 - L_dedo_tip, '3');
+    addDedo(greatgrandson, -L_dedo_body/2 - L_dedo_tip, -initial_delta2 - (h_garra/2) - h_dedo_body/2, -L_dedo_body/2 - L_dedo_tip, '4');
+    createCamera6(0, -initial_delta2 - L_dedo_body, 0);
 
     obj.add(greatgrandson);
 
@@ -381,22 +385,52 @@ function createGreatGrandson(obj, x, y, z) {
 function addGarra(obj, x, y, z) {
     'use strict';
 
-    geometry = new THREE.BoxGeometry(L_garra, h_garra, L_garra);
+    geometry = new THREE.CylinderGeometry(r_garra, r_garra, h_garra, 20);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
     mesh.name = "garra";
     obj.add(mesh);
 
-    garraBoundingSphere = new THREE.Sphere(mesh.position, L_garra);
+    garraBoundingSphere = new THREE.Sphere(mesh.position, r_garra);
     console.log(garraBoundingSphere);
 }
 
-function addDedo(obj, x, y, z) {
+function addDedo(obj, x, y, z, number) {
     'use strict';
-    geometry = new THREE.TetrahedronGeometry(L_dedo);
-    mesh = new THREE.Mesh(geometry, containerMaterial);
-    mesh.position.set(x, y, z);
-    obj.add(mesh);    
+    
+    var dedo = new THREE.Group();
+    // dedo é composto por body(articulação) e tip(ponta)
+    var geometry_body = new THREE.BoxGeometry(L_dedo_body, h_dedo_body, L_dedo_body);
+    var mesh_body = new THREE.Mesh(geometry_body, material);
+    mesh_body.position.set(x, y, z);
+
+    var geometry_tip = new THREE.BufferGeometry();
+    const vertices = new Float32Array( [
+        L_dedo_tip/2, -h_dedo_tip/2,  L_dedo_tip/2,   // v0
+        L_dedo_tip/2, -h_dedo_tip/2,  -L_dedo_tip/2,  // v1
+        -L_dedo_tip/2, -h_dedo_tip/2,  -L_dedo_tip/2, // v2
+        -L_dedo_tip/2, -h_dedo_tip/2,  L_dedo_tip/2,  // v3
+        0,  -h_dedo_body - h_dedo_tip, 0              // v4
+    ] );
+    const indices = [
+        0, 1, 2,
+        2, 3, 0,
+        0, 4, 1,
+        1, 4, 2,
+        2, 4, 3,
+        3, 4, 0,
+        
+    ];
+    geometry_tip.setIndex( indices );
+    geometry_tip.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+
+    var mesh_tip = new THREE.Mesh(geometry_tip, material);
+    mesh_tip.position.set(x, y, z);
+       
+    dedo.add(mesh_body);
+    dedo.add(mesh_tip);
+    dedo.name = number;
+    obj.add(dedo);
 }
 
 function createContainer(x, y, z) {
@@ -550,6 +584,42 @@ function update(){
             });
             greatgrandson.userData.vertical_desloc -= greatgrandson.userData.vertical_speed * timeElapsed;
     }
+
+    // Claw closing
+    if (greatgrandson.userData.closeClaw) {
+        greatgrandson.children.forEach (child => {
+            if (child.name === '1') {
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), greatgrandson.userData.claw_speed);
+            }
+            if (child.name === '2') {
+                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), greatgrandson.userData.claw_speed);
+            }
+            if (child.name === '3') {
+                child.rotateOnAxis(new THREE.Vector3(1, 0, -1), greatgrandson.userData.claw_speed);
+            }
+            if (child.name === '4') {
+                child.rotateOnAxis(new THREE.Vector3(-1, 0,-1), greatgrandson.userData.claw_speed);
+            }
+        })
+    }
+
+    // Claw opening
+    if (greatgrandson.userData.openClaw) {
+        greatgrandson.children.forEach (child => {
+            if (child.name === '1') {
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), -greatgrandson.userData.claw_speed);
+            }
+            if (child.name === '2') {
+                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), -greatgrandson.userData.claw_speed);
+            }
+            if (child.name === '3') {
+                child.rotateOnAxis(new THREE.Vector3(1, 0, -1), -greatgrandson.userData.claw_speed);
+            }
+            if (child.name === '4') {
+                child.rotateOnAxis(new THREE.Vector3(-1, 0,-1), -greatgrandson.userData.claw_speed);
+            }
+        })
+    }
 }
 
 /////////////
@@ -674,6 +744,15 @@ function onKeyDown(e) {
         case 100: // d
             greatgrandson.userData.cableGoingDown = true;
             break;
+        //claw's opening/closing movement
+        case 82: // R
+        case 114: // r
+            greatgrandson.userData.openClaw = true;
+            break;
+        case 70: // F
+        case 102: // f
+            greatgrandson.userData.closeClaw = true;
+            break;
     }
 }
 
@@ -710,6 +789,15 @@ function onKeyUp(e){
         case 68: // D
         case 100: // d
             greatgrandson.userData.cableGoingDown = false;
+            break;
+        //claw's opening/closing movement
+        case 82: // R
+        case 114: // r
+            greatgrandson.userData.openClaw = false;
+            break;
+        case 70: // F
+        case 102: // f
+            greatgrandson.userData.closeClaw = false;
             break;
     }
 }

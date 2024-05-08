@@ -15,6 +15,12 @@ var scene, renderer, clock;
 // meshes
 var geometry, mesh, material, containerMaterial, dodecahedronCargoMaterial, icosahedronCargoMaterial, torusCargoMaterial;
 
+// bounding volumes
+var garraBoundingSphere;
+
+// special parts
+var garra;
+
 // measurements
 var L_base = 9;
 var h_base = 3;
@@ -52,7 +58,6 @@ var rb_cabo = 0.1;
 var initial_delta2 = 9;
 var L_garra = 3;
 var h_garra = 1.5;
-var c_garra = 3;
 
 var L_dedo = 1;
 
@@ -380,10 +385,14 @@ function createGreatGrandson(obj, x, y, z) {
 function addGarra(obj, x, y, z) {
     'use strict';
 
-    geometry = new THREE.BoxGeometry(L_garra, h_garra, c_garra);
+    geometry = new THREE.BoxGeometry(L_garra, h_garra, L_garra);
     mesh = new THREE.Mesh(geometry, material);
+    // garra = mesh;
     mesh.position.set(x, y, z);
     obj.add(mesh);
+
+    garraBoundingSphere = new THREE.Sphere(mesh.position, L_garra);
+    console.log(garraBoundingSphere);
 }
 
 function addDedo(obj, x, y, z) {
@@ -435,6 +444,9 @@ function createDodecahedronCargo(x, y, z) {
     mesh = new THREE.Mesh(geometry, dodecahedronCargoMaterial);
     mesh.position.set(x, y, z);
     dodecahedronCargo.add(mesh);
+
+    var boundingSphere = new THREE.Sphere(mesh.position, 3);
+    console.log(boundingSphere);
 }
 
 function createIcosahedronCargo(x, y, z) {
@@ -461,8 +473,6 @@ function createTorusCargo(x, y, z) {
     mesh = new THREE.Mesh(geometry, torusCargoMaterial);
     mesh.position.set(x, y, z);
     torusCargo.add(mesh);
-    
-    
 }
 
 //////////////////////
@@ -489,6 +499,9 @@ function update(){
 
     var timeElapsed = clock.getDelta();
 
+    //garraBoundingSphere.copy(garra.geometry.boundingSphere).applyMatrix4(garra.matrixWorld);
+    //console.log(garraBoundingSphere);
+
     // Top section rotation
     if (son.userData.positiveRotation) {
         son.rotateY(son.userData.speed * timeElapsed);
@@ -514,11 +527,7 @@ function update(){
             greatgrandson.translateY(greatgrandson.userData.vertical_speed * timeElapsed);
             grandson.children.forEach (child => {
                 if (child.name === "cabo") {
-                    const scale = 1.007;
-                    child.scale.y /= scale;
-                    //child.scale.y -= ((greatgrandson.userData.vertical_speed * timeElapsed)/2);
-                    //child.geometry.dispose();
-                    //child.geometry = new THREE.CylinderGeometry(rt_cabo, rb_cabo, (greatgrandson.userData.vertical_speed * timeElapsed));
+                    child.scale.y -= (greatgrandson.userData.vertical_speed * timeElapsed)/child.geometry.parameters.height;
                     child.translateY((greatgrandson.userData.vertical_speed * timeElapsed)/2);
                 }
             });
@@ -530,8 +539,7 @@ function update(){
             greatgrandson.translateY(-(greatgrandson.userData.vertical_speed * timeElapsed));
             grandson.children.forEach (child => {
                 if (child.name === "cabo") {
-                    const scale = 1.007;
-                    child.scale.y *= scale;
+                    child.scale.y += (greatgrandson.userData.vertical_speed * timeElapsed)/child.geometry.parameters.height;
                     child.translateY(-((greatgrandson.userData.vertical_speed * timeElapsed)/2));
                 }
             });

@@ -12,32 +12,22 @@ import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 var camera1, camera2, camera3, camera4, camera5, camera6, currentCamera;
 var scene, renderer, clock;
 
+// Cargos
+var cubeCargoMesh, dodecahedronCargoMesh, isocahedronCargoMesh, torusCargoMesh, torusKnotCargoMesh;
+
 // meshes
 var geometry, eixoMaterial, mesh, material, containerMaterial, containerBaseMaterial, dodecahedronCargoMaterial, icosahedronCargoMaterial, torusCargoMaterial;
 var cabineMaterial, lancaMaterial, contraLancaMaterial, portaLancaMaterial, caboMaterial, tiranteMaterial, contraPesoMaterial, carroMaterial, garraMaterial;
 var baseMaterial, cubeCargoMaterial, torusKnotMaterial;
 
-const materials = [
-    baseMaterial,
-    material,
-    containerMaterial,
-    dodecahedronCargoMaterial,
-    icosahedronCargoMaterial,
-    torusCargoMaterial,
-    containerBaseMaterial,
-    eixoMaterial,
-    cabineMaterial,
-    lancaMaterial,
-    contraLancaMaterial,
-    portaLancaMaterial,
-    caboMaterial,
-    tiranteMaterial,
-    carroMaterial,
-    contraPesoMaterial,
-    garraMaterial,
-    torusKnotMaterial,
-    cubeCargoMaterial
-    ];
+
+// Radius
+const greatGrandSonRadius = 1.5; 
+const cubeRadius = 4;
+const isocahedronRadius = 3;
+const dodecahedronRadius = 3.5;
+const torusRadius = 4;
+const torusKnotRadius = 2;
 
 // measurements
 var L_base = 9;
@@ -424,7 +414,7 @@ function createGreatGrandson(obj, x, y, z) {
     greatgrandson = new THREE.Object3D();
     greatgrandson.userData = {cableGoingDown: false, cableGoingUp: false,
                         maxCableTranslationLimit: h_garra * 6,
-                        minCableTranslationLimit: -(h_torre/2),
+                        minCableTranslationLimit: -(h_torre/2 + 2) ,
                         vertical_speed: 5, vertical_desloc: 0,
                         openClaw: false, closeClaw: false,
                         claw_speed: 0.5}
@@ -527,73 +517,95 @@ function addContainerWall(obj, x, y, z, largura, altura, espessura) {
 function createDodecahedronCargo(x, y, z) {
     'use strict';
 
-    var dodecahedronCargo = new THREE.Object3D();
     dodecahedronCargoMaterial = new THREE.MeshBasicMaterial({ color: 0x45c58a, wireframe: true});
-    scene.add(dodecahedronCargo);
 
     geometry = new THREE.DodecahedronGeometry(3);
-    mesh = new THREE.Mesh(geometry, dodecahedronCargoMaterial);
-    mesh.position.set(x, y, z);
-    dodecahedronCargo.add(mesh);
+    dodecahedronCargoMesh = new THREE.Mesh(geometry, dodecahedronCargoMaterial);
+    dodecahedronCargoMesh.position.set(x, y, z);
+    scene.add(dodecahedronCargoMesh);
 }
 
 function createIcosahedronCargo(x, y, z) {
     'use strict';
 
-    var isocahedronCargo = new THREE.Object3D();
     icosahedronCargoMaterial = new THREE.MeshBasicMaterial({color: 0xcc4d97, wireframe: true});
-    scene.add(isocahedronCargo);
 
     geometry = new THREE.IcosahedronGeometry(3);
-    mesh = new THREE.Mesh(geometry, icosahedronCargoMaterial);
-    mesh.position.set(x, y, z);
-    isocahedronCargo.add(mesh);
+    isocahedronCargoMesh = new THREE.Mesh(geometry, icosahedronCargoMaterial);
+    isocahedronCargoMesh.position.set(x, y, z);
+    scene.add(isocahedronCargoMesh);
 }
 
 function createTorusCargo(x, y, z) {
     'use strict';
 
-    var torusCargo = new THREE.Object3D();
     torusCargoMaterial = new THREE.MeshBasicMaterial({color: 0xaacc00, wireframe: true});
-    scene.add(torusCargo);
 
     geometry = new THREE.TorusGeometry(2.4, 1.5, 7, 10, 10);
-    mesh = new THREE.Mesh(geometry, torusCargoMaterial);
-    mesh.position.set(x, y, z);
-    torusCargo.add(mesh);
+    torusCargoMesh = new THREE.Mesh(geometry, torusCargoMaterial);
+    torusCargoMesh.position.set(x, y, z);
+    scene.add(torusCargoMesh);
 }
 
 function createCubeCargo(x, y, z) {
     'use strict';
 
-    var cubeCargo = new THREE.Object3D();
+    //cubeCargo = new THREE.Object3D();
     cubeCargoMaterial = new THREE.MeshBasicMaterial({color: 0xE77828, wireframe: true});
-    scene.add(cubeCargo);
 
     geometry = new THREE.BoxGeometry(5, 5, 5);
-    mesh = new THREE.Mesh(geometry, cubeCargoMaterial);
-    mesh.position.set(x, y, z);
-    cubeCargo.add(mesh);
+    cubeCargoMesh = new THREE.Mesh(geometry, cubeCargoMaterial);
+    cubeCargoMesh.position.set(x, y, z);
+    //cubeCargo.add(mesh);
+    scene.add(cubeCargoMesh);
 }
 
 function createTorusKnotCargo(x, y, z) {
     'use strict';
 
-    var torusKnotCargo = new THREE.Object3D();
     torusKnotMaterial = new THREE.MeshBasicMaterial({color: 0xF06292, wireframe: true});
-    scene.add(torusKnotCargo);
-
+    
     geometry = new THREE.TorusKnotGeometry();
-    mesh = new THREE.Mesh(geometry, torusKnotMaterial);
-    mesh.position.set(x, y, z);
-    torusKnotCargo.add(mesh);
+    torusKnotCargoMesh = new THREE.Mesh(geometry, torusKnotMaterial);
+    torusKnotCargoMesh.position.set(x, y, z);
+    scene.add(torusKnotCargoMesh);
 }
+
 
 //////////////////////
 /* CHECK COLLISIONS */
 //////////////////////
+function hasCollision(rA, rB, objA, objB) {
+    var worldPosB = new  THREE.Vector3();
+    objB.getWorldPosition(worldPosB);
+
+    return Math.pow((rA + rB), 2) >= Math.pow((worldPosB.x - objA.position.x), 2) +
+         Math.pow((worldPosB.y - objA.position.y),2) + Math.pow((worldPosB.z - objA.position.z),2);
+}
+    
+
 function checkCollisions(){
     'use strict';
+    // check collision with cube
+    if (hasCollision(cubeRadius, greatGrandSonRadius, cubeCargoMesh, greatgrandson)) {
+        console.log("Detectou 1");
+    }
+    // check collision with dodecahedron
+    if (hasCollision(dodecahedronRadius, greatGrandSonRadius, dodecahedronCargoMesh, greatgrandson)) {
+        console.log("Detectou 2");
+    }
+    // check collision with isocahedron
+    if (hasCollision(isocahedronRadius, greatGrandSonRadius, isocahedronCargoMesh, greatgrandson)) {
+        console.log("Detectou 3");
+    }
+    // check collision with Torus
+    if (hasCollision(torusRadius, greatGrandSonRadius, torusCargoMesh, greatgrandson)) {
+        console.log("Detectou 4");
+    }
+    // check collision with TorusKnot
+    if (hasCollision(torusKnotRadius, greatGrandSonRadius, torusKnotCargoMesh, greatgrandson)) {
+        console.log("Detectou 5");
+    }
 
 }
 
@@ -602,7 +614,6 @@ function checkCollisions(){
 ///////////////////////
 function handleCollisions(){
     'use strict';
-
 }
 
 ////////////
@@ -661,7 +672,7 @@ function update(){
                 }
             });
             greatgrandson.userData.vertical_desloc -= greatgrandson.userData.vertical_speed * timeElapsed;
-;    }
+    }
 
     // Claw closing
     if (greatgrandson.userData.closeClaw) {
@@ -701,6 +712,7 @@ function update(){
 
     updateViewKeys();
     updateMovementKeys();
+    checkCollisions();
 }
 
 /////////////

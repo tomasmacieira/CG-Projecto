@@ -106,8 +106,6 @@ function createScene(){
     scene = new THREE.Scene();
     scene.background = new THREE.Color('white');
 
-    scene.add(new THREE.AxesHelper(10));
-
     createFather(0, 0, 0);
 
     createContainer(25, 0, 10);
@@ -216,7 +214,6 @@ function createFather(x, y, z) {
     addTorre(father, 0, h_torre/2 + h_base/2, 0);
 
     scene.add(father);
-    father.add(new THREE.AxesHelper(10));
 
 
     father.position.x = x;
@@ -262,7 +259,6 @@ function createSon(obj, x, y, z) {
     addTirante(son, - c_tirante2 / 2 + 0.8, h_porta_lanca + h_lanca / 2 - 0.2, 0, c_tirante2, 1);
 
     obj.add(son);
-    son.add(new THREE.AxesHelper(10));
 
     son.position.x = x;
     son.position.y = y;
@@ -377,7 +373,6 @@ function createGrandson(obj, x, y, z) {
     addCabo(grandson, 0, -initial_delta2/2, 0);
 
     obj.add(grandson);
-    grandson.add(new THREE.AxesHelper(10));
 
     grandson.position.x = x;
     grandson.position.y = y;
@@ -414,10 +409,14 @@ function createGreatGrandson(obj, x, y, z) {
     greatgrandson = new THREE.Object3D();
     greatgrandson.userData = {cableGoingDown: false, cableGoingUp: false,
                         maxCableTranslationLimit: h_garra * 6,
-                        minCableTranslationLimit: -(h_torre/2 + 2) ,
-                        vertical_speed: 5, vertical_desloc: 0,
+                        minCableTranslationLimit: -(h_torre/2 + 2),
+                        vertical_speed: 5, 
+                        vertical_desloc: 0, //remover
                         openClaw: false, closeClaw: false,
-                        claw_speed: 0.5}
+                        claw_speed: 0.5,
+                        claw_angle: 0,
+                        maxAngleLimit: Math.PI/1.3,
+                        minAngleLimit: -Math.PI/4}
 
     addGarra(greatgrandson, 0, 0, 0);
     addDedo(greatgrandson, -L_dedo_body/2 - L_dedo_tip/2, -h_dedo_body/3, L_dedo_body/2 + L_dedo_tip/2, '1');
@@ -427,7 +426,6 @@ function createGreatGrandson(obj, x, y, z) {
     createCamera6(0, - L_dedo_body, 0);
 
     obj.add(greatgrandson);
-    greatgrandson.add(new THREE.AxesHelper(10));
 
     greatgrandson.position.x = x;
     greatgrandson.position.y = y;
@@ -450,7 +448,7 @@ function addDedo(obj, x, y, z, number) {
     var dedo = new THREE.Group();
     // dedo é composto por body(articulação) e tip(ponta)
     var geometry_body = new THREE.BoxGeometry(L_dedo_body, h_dedo_body, L_dedo_body);
-    var mesh_body = new THREE.Mesh(geometry_body, material);
+    var mesh_body = new THREE.Mesh(geometry_body, garraMaterial);
     mesh_body.position.set(x, y, z);
 
     var geometry_tip = new THREE.BufferGeometry();
@@ -675,37 +673,45 @@ function update(){
     }
 
     // Claw closing
-    if (greatgrandson.userData.closeClaw) {
+    if (greatgrandson.userData.closeClaw && (greatgrandson.userData.claw_angle < greatgrandson.userData.maxAngleLimit)) {
         greatgrandson.children.forEach (child => {
             if (child.name === '1') {
                 child.rotateOnAxis(new THREE.Vector3(-1, 0, -1),  -(greatgrandson.userData.claw_speed * timeElapsed));
+                greatgrandson.userData.claw_angle += (greatgrandson.userData.claw_speed * timeElapsed);
             }
             if (child.name === '2') {
                 child.rotateOnAxis(new THREE.Vector3(1, 0, -1),  greatgrandson.userData.claw_speed * timeElapsed);
+                greatgrandson.userData.claw_angle += (greatgrandson.userData.claw_speed * timeElapsed);
             }
             if (child.name === '3') {
                 child.rotateOnAxis(new THREE.Vector3(1, 0, 1), -(greatgrandson.userData.claw_speed * timeElapsed));
+                greatgrandson.userData.claw_angle += (greatgrandson.userData.claw_speed * timeElapsed);
             }
             if (child.name === '4') {
                 child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), greatgrandson.userData.claw_speed * timeElapsed);
+                greatgrandson.userData.claw_angle += (greatgrandson.userData.claw_speed * timeElapsed);
             }
         })
     }
 
     // Claw opening
-    if (greatgrandson.userData.openClaw) {
+    if (greatgrandson.userData.openClaw && greatgrandson.userData.claw_angle > greatgrandson.userData.minAngleLimit) {
         greatgrandson.children.forEach (child => {
             if (child.name === '1') {
                 child.rotateOnAxis(new THREE.Vector3(-1, 0, -1), greatgrandson.userData.claw_speed * timeElapsed);
+                greatgrandson.userData.claw_angle -= (greatgrandson.userData.claw_speed * timeElapsed);
             }
             if (child.name === '2') {
                 child.rotateOnAxis(new THREE.Vector3(1, 0, -1), -(greatgrandson.userData.claw_speed * timeElapsed));
+                greatgrandson.userData.claw_angle -= (greatgrandson.userData.claw_speed * timeElapsed);
             }
             if (child.name === '3') {
                 child.rotateOnAxis(new THREE.Vector3(1, 0, 1), greatgrandson.userData.claw_speed * timeElapsed);
+                greatgrandson.userData.claw_angle -= (greatgrandson.userData.claw_speed * timeElapsed);
             }
             if (child.name === '4') {
                 child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), -(greatgrandson.userData.claw_speed * timeElapsed));
+                greatgrandson.userData.claw_angle -= (greatgrandson.userData.claw_speed * timeElapsed);
             }
         })
     }

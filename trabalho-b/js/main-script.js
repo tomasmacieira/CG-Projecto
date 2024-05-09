@@ -17,9 +17,6 @@ var geometry, eixoMaterial, mesh, material, containerMaterial, containerBaseMate
 var cabineMaterial, lancaMaterial, contraLancaMaterial, portaLancaMaterial, caboMaterial, tiranteMaterial, contraPesoMaterial, carroMaterial, garraMaterial;
 var baseMaterial;
 
-// bounding volumes
-var garraBoundingSphere, cargo1BoundingSphere, cargo2BoundingSphere, cargo3BoundingSphere;
-
 // measurements
 var L_base = 9;
 var h_base = 3;
@@ -409,9 +406,6 @@ function addGarra(obj, x, y, z) {
     mesh.position.set(x, y, z);
     mesh.name = "garra";
     obj.add(mesh);
-
-    garraBoundingSphere = new THREE.Sphere(mesh.position, r_garra);
-    console.log(garraBoundingSphere);
 }
 
 function addDedo(obj, x, y, z, number) {
@@ -494,9 +488,6 @@ function createDodecahedronCargo(x, y, z) {
     mesh = new THREE.Mesh(geometry, dodecahedronCargoMaterial);
     mesh.position.set(x, y, z);
     dodecahedronCargo.add(mesh);
-
-    cargo1BoundingSphere = new THREE.Sphere(mesh.position, 3);
-    console.log(cargo1BoundingSphere);
 }
 
 function createIcosahedronCargo(x, y, z) {
@@ -510,9 +501,6 @@ function createIcosahedronCargo(x, y, z) {
     mesh = new THREE.Mesh(geometry, icosahedronCargoMaterial);
     mesh.position.set(x, y, z);
     isocahedronCargo.add(mesh);
-
-    cargo2BoundingSphere = new THREE.Sphere(mesh.position, 3);
-    console.log(cargo2BoundingSphere);
 }
 
 function createTorusCargo(x, y, z) {
@@ -526,9 +514,6 @@ function createTorusCargo(x, y, z) {
     mesh = new THREE.Mesh(geometry, torusCargoMaterial);
     mesh.position.set(x, y, z);
     torusCargo.add(mesh);
-
-    cargo3BoundingSphere = new THREE.Sphere(mesh.position, 3);
-    console.log(cargo3BoundingSphere);
 }
 
 //////////////////////
@@ -730,7 +715,7 @@ function onKeyDown(e) {
             break;
         case 54: // 6
             currentCamera = camera6;
-        break;
+            break;
         case 55: // 7
             var materials = [
                 baseMaterial,
@@ -757,39 +742,31 @@ function onKeyDown(e) {
             });
             break;
         // superior section rotation
-        case 81: // Q
-        case 113: // q
+        case 81: // Q/q
             son.userData.positiveRotation = true;
             break;
-        case 65: // A
-        case 97: // a
+        case 65: // A/a
             son.userData.negativeRotation = true;
             break;
         // car movement
-        case 87: // W
-        case 119: // w
+        case 87: // W/w
             grandson.userData.movingOut = true;
             break;
-        case 83: // S
-        case 115: // s
+        case 83: // S/s
             grandson.userData.movingIn = true;
             break;
         // claw's vertical movement
-        case 69: // E
-        case 101: // e
+        case 69: // E/e
             greatgrandson.userData.cableGoingUp = true;
             break;
-        case 68: // D
-        case 100: // d
+        case 68: // D/d
             greatgrandson.userData.cableGoingDown = true;
             break;
         //claw's opening/closing movement
-        case 82: // R
-        case 114: // r
+        case 82: // R/r
             greatgrandson.userData.openClaw = true;
             break;
-        case 70: // F
-        case 102: // f
+        case 70: // F/f
             greatgrandson.userData.closeClaw = true;
             break;
     }
@@ -803,39 +780,32 @@ function onKeyUp(e){
 
     switch(e.keyCode) {
         // superior section rotation
-        case 81: // Q
-        case 113: // q
+        case 81: // Q/q
             son.userData.positiveRotation = false;
             break;
-        case 65: // A
-        case 97: // a
+        case 65: // A/a
             son.userData.negativeRotation = false;
             break;
         // car movement
-        case 87: // W
-        case 119: // w
+        case 87: // W/w
             grandson.userData.movingOut = false;
             break;
-        case 83: // S
+        case 83: // S/s
         case 115: // s
             grandson.userData.movingIn = false;
             break;
         // claw's vertical movement
-        case 69: // E
-        case 101: // e
+        case 69: // E/e
             greatgrandson.userData.cableGoingUp = false;
             break;
-        case 68: // D
-        case 100: // d
+        case 68: // D/d
             greatgrandson.userData.cableGoingDown = false;
             break;
         //claw's opening/closing movement
-        case 82: // R
-        case 114: // r
+        case 82: // R/r
             greatgrandson.userData.openClaw = false;
             break;
-        case 70: // F
-        case 102: // f
+        case 70: // F/f
             greatgrandson.userData.closeClaw = false;
             break;
     }

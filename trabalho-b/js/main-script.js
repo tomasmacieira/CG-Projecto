@@ -104,14 +104,15 @@ function createScene(){
     'use strict';
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color('white');
+    scene.background = new THREE.Color(0xb8cef2);
 
     // add a floor to the scene
     let floorMaterial = new THREE.MeshBasicMaterial( {color: 0x999999, side: THREE.DoubleSide} );
-    let floorGeometry = new THREE.PlaneGeometry(70, 70);
+    let floorGeometry = new THREE.BoxGeometry(72, 72, 2);
     let floor = new THREE.Mesh(floorGeometry, floorMaterial);
     scene.add(floor);
     floor.rotateX(-Math.PI/2);
+    floor.position.y = -1;
 
 
     createFather(0, h_base/2, 0);
@@ -748,7 +749,7 @@ function init() {
     createCamera4();
     createCamera5();
 
-    currentCamera = camera1;
+    currentCamera = camera4;
 
     //const controls = new OrbitControls(currentCamera, renderer.domElement);
 
@@ -960,11 +961,11 @@ function onKeyUp(e){
 function updateViewKeys() {
     const viewKeysDiv = document.getElementById('views');
     let views_text = '';
-    views_text += '<span style="color:black">View:</span><br>';
+    views_text += '<span style="color":black>View:</span><br>';
 
     for (const key in views_keys) {
         const active = views_keys[key];
-        const color = active ? 'red' : 'gray';
+        const color = active ? 'red' : 'white';
 
         views_text += `<span style="color:${color};">${key}</span><br>`;
     }
@@ -975,11 +976,11 @@ function updateViewKeys() {
 function updateMovementKeys() {
     const movementKeysDiv = document.getElementById('movement');
     let movement_text = '';
-    movement_text += '<span style="color:black">Movement:</span><br>';
+    movement_text += '<span style="color":black>Movement:</span><br>';
 
     for (const key in movement_keys) {
         const active = movement_keys[key];
-        const color = active ? 'red' : 'gray';
+        const color = active ? 'red' : 'white';
 
         movement_text += `<span style="color:${color};">${key}</span><br>`;
     }

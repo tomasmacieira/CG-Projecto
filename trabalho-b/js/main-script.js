@@ -106,7 +106,15 @@ function createScene(){
     scene = new THREE.Scene();
     scene.background = new THREE.Color('white');
 
-    createFather(0, 0, 0);
+    // add a floor to the scene
+    let floorMaterial = new THREE.MeshBasicMaterial( {color: 0x999999, side: THREE.DoubleSide} );
+    let floorGeometry = new THREE.PlaneGeometry(70, 70);
+    let floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    scene.add(floor);
+    floor.rotateX(-Math.PI/2);
+
+
+    createFather(0, h_base/2, 0);
 
     createContainer(25, 0, 10);
     createDodecahedronCargo(-20, 2, -10);
@@ -126,9 +134,9 @@ function createCamera1() {
         window.innerHeight / -20, 1, 1000);
     
     camera1.position.x = 0;
-    camera1.position.y = 0;
+    camera1.position.y = h_torre/2;
     camera1.position.z = 50;
-    camera1.lookAt(scene.position);
+    camera1.lookAt(0, h_torre/2, 0)
 }
 
 function createCamera2() {
@@ -139,9 +147,9 @@ function createCamera2() {
         window.innerHeight / -20, 1, 1000);
     
     camera2.position.x = 50;
-    camera2.position.y = 0;
+    camera2.position.y = h_torre/2;
     camera2.position.z = 0;
-    camera2.lookAt(scene.position);
+    camera2.lookAt(0, h_torre/2, 0);
 }
 
 function createCamera3() {
@@ -742,7 +750,7 @@ function init() {
 
     currentCamera = camera1;
 
-    const controls = new OrbitControls(currentCamera, renderer.domElement);
+    //const controls = new OrbitControls(currentCamera, renderer.domElement);
 
     render();
 

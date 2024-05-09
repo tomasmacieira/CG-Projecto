@@ -4,17 +4,30 @@ body {
     overflow: hidden;
 }
 
-#HUD {
+#views {
+    position: fixed;
+    bottom: 15px;
+    left: 15px;
+    padding: 15px;
+    background-color: rgba(127, 255, 212, 0.5);
     font-family: Tahoma, sans-serif;
+    font-weight: bold;
+    border-radius: 0px;
     font-size: 14px;
-    margin: 10px;
-    position: absolute;
-    bottom: 0;
-    left: 0;
+    line-height: 1.72;
+    width: 200;
 }
 
-#HUD span {
-    color: grey;
+#movement {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    padding: 15px;
+    background-color: rgba(127, 255, 212, 0.5);
+    font-family: Tahoma, sans-serif;
     font-weight: bold;
-    font-size: 32px;
+    border-radius: 0px;
+    font-size: 14px;
+    line-height: 1.72;
+    width: 325px;
 }

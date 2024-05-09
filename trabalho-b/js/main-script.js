@@ -17,8 +17,27 @@ var geometry, eixoMaterial, mesh, material, containerMaterial, containerBaseMate
 var cabineMaterial, lancaMaterial, contraLancaMaterial, portaLancaMaterial, caboMaterial, tiranteMaterial, contraPesoMaterial, carroMaterial, garraMaterial;
 var baseMaterial, cubeCargoMaterial, torusKnotMaterial;
 
-// bounding volumes
-var garraBoundingBox, cargo1BoundingSphere, cargo2BoundingSphere, cargo3BoundingSphere;
+const materials = [
+    baseMaterial,
+    material,
+    containerMaterial,
+    dodecahedronCargoMaterial,
+    icosahedronCargoMaterial,
+    torusCargoMaterial,
+    containerBaseMaterial,
+    eixoMaterial,
+    cabineMaterial,
+    lancaMaterial,
+    contraLancaMaterial,
+    portaLancaMaterial,
+    caboMaterial,
+    tiranteMaterial,
+    carroMaterial,
+    contraPesoMaterial,
+    garraMaterial,
+    torusKnotMaterial,
+    cubeCargoMaterial
+    ];
 
 // measurements
 var L_base = 9;
@@ -66,6 +85,28 @@ var h_dedo_tip = 0.5;
 // object3Ds
 var father, son, grandson, greatgrandson;
 
+// HUD
+const views_keys = {
+    'Front camera (1)' : false,
+    'Side camera (2)' : false,
+    'Top camera (3)' : false,
+    'Fixed orthographic camera (4)' : false,
+    'Fixed perspective camera (5)' : false,
+    'Mobile camera (6)' : false,
+    'Wireframe mode on/off (7)' : false,
+};
+
+const movement_keys = {
+    'Q' : false,
+    'A' : false,
+    'W' : false,
+    'S' : false,
+    'E' : false,
+    'D' : false,
+    'R' : false,
+    'F' : false,
+};
+
 /////////////////////
 /* CREATE SCENE(S) */
 /////////////////////
@@ -73,7 +114,7 @@ function createScene(){
     'use strict';
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color('skyblue');
+    scene.background = new THREE.Color('white');
 
     scene.add(new THREE.AxesHelper(10));
 
@@ -401,9 +442,6 @@ function createGreatGrandson(obj, x, y, z) {
     greatgrandson.position.x = x;
     greatgrandson.position.y = y;
     greatgrandson.position.z = z;
-
-    garraBoundingBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
-    garraBoundingBox.setFromObject(greatgrandson);
 }
 
 function addGarra(obj, x, y, z) {
@@ -623,14 +661,6 @@ function update(){
                 }
             });
             greatgrandson.userData.vertical_desloc -= greatgrandson.userData.vertical_speed * timeElapsed;
-            console.log("###############################################################")
-            console.log("Minimum X:", garraBoundingBox.min.x);
-            console.log("Minimum Y:", garraBoundingBox.min.y);
-            console.log("Minimum Z:", garraBoundingBox.min.z);
-
-            console.log("Maximum X:", garraBoundingBox.max.x);
-            console.log("Maximum Y:", garraBoundingBox.max.y);
-            console.log("Maximum Z:", garraBoundingBox.max.z);
 ;    }
 
     // Claw closing
@@ -668,6 +698,9 @@ function update(){
             }
         })
     }
+
+    updateViewKeys();
+    updateMovementKeys();
 }
 
 /////////////
@@ -743,24 +776,30 @@ function onKeyDown(e) {
         // camera switching
         case 49: // 1
             currentCamera = camera1;
+            views_keys['Front camera (1)'] = true;
             break;
         case 50: // 2
             currentCamera = camera2;
+            views_keys['Side camera (2)'] = true;
             break;
         case 51: // 3
             currentCamera = camera3;
+            views_keys['Top camera (3)'] = true;
             break;
         case 52: // 4
             currentCamera = camera4;
+            views_keys['Fixed orthographic camera (4)'] = true;
             break;
         case 53: // 5
             currentCamera = camera5;
+            views_keys['Fixed perspective camera (5)'] = true;
             break;
         case 54: // 6
             currentCamera = camera6;
+            views_keys['Mobile camera (6)'] = true;
             break;
         case 55: // 7
-            var materials = [
+            const materials = [
                 baseMaterial,
                 material,
                 containerMaterial,
@@ -785,34 +824,43 @@ function onKeyDown(e) {
             materials.forEach(function(mat) {
                 mat.wireframe = !mat.wireframe;
             });
+            views_keys['Wireframe mode on/off (7)'] = true;
             break;
         // superior section rotation
         case 81: // Q/q
             son.userData.positiveRotation = true;
+            movement_keys['Q'] = true;
             break;
         case 65: // A/a
             son.userData.negativeRotation = true;
+            movement_keys['A'] = true;
             break;
         // car movement
         case 87: // W/w
             grandson.userData.movingOut = true;
+            movement_keys['W'] = true;
             break;
         case 83: // S/s
             grandson.userData.movingIn = true;
+            movement_keys['S'] = true;
             break;
         // claw's vertical movement
         case 69: // E/e
             greatgrandson.userData.cableGoingUp = true;
+            movement_keys['E'] = true;
             break;
         case 68: // D/d
             greatgrandson.userData.cableGoingDown = true;
+            movement_keys['D'] = true;
             break;
         //claw's opening/closing movement
         case 82: // R/r
             greatgrandson.userData.openClaw = true;
+            movement_keys['R'] = true;
             break;
         case 70: // F/f
             greatgrandson.userData.closeClaw = true;
+            movement_keys['F'] = true;
             break;
     }
 }
@@ -824,37 +872,101 @@ function onKeyUp(e){
     'use strict';
 
     switch(e.keyCode) {
+        // camera switching
+        case 49: // 1
+            views_keys['Front camera (1)'] = false;
+            break;
+        case 50: // 2
+            views_keys['Side camera (2)'] = false;
+            break;
+        case 51: // 3
+            views_keys['Top camera (3)'] = false;
+            break;
+        case 52: // 4
+            views_keys['Fixed orthographic camera (4)'] = false;
+            break;
+        case 53: // 5
+            views_keys['Fixed perspective camera (5)'] = false;
+            break;
+        case 54: // 6
+            views_keys['Mobile camera (6)'] = false;
+            break;
+        case 55:
+            views_keys['Wireframe mode on/off (7)'] = false;
+            break;
         // superior section rotation
         case 81: // Q/q
             son.userData.positiveRotation = false;
+            movement_keys['Q'] = false;
             break;
         case 65: // A/a
             son.userData.negativeRotation = false;
+            movement_keys['A'] = false;
             break;
         // car movement
         case 87: // W/w
             grandson.userData.movingOut = false;
+            movement_keys['W'] = false;
             break;
         case 83: // S/s
         case 115: // s
             grandson.userData.movingIn = false;
+            movement_keys['S'] = false;
             break;
         // claw's vertical movement
         case 69: // E/e
             greatgrandson.userData.cableGoingUp = false;
+            movement_keys['E'] = false;
             break;
         case 68: // D/d
             greatgrandson.userData.cableGoingDown = false;
+            movement_keys['D'] = false;
             break;
         //claw's opening/closing movement
         case 82: // R/r
             greatgrandson.userData.openClaw = false;
+            movement_keys['R'] = false;
             break;
         case 70: // F/f
             greatgrandson.userData.closeClaw = false;
+            movement_keys['F'] = false;
             break;
     }
 }
+
+///////////////////////
+/*        HUD        */
+///////////////////////
+function updateViewKeys() {
+    const viewKeysDiv = document.getElementById('views');
+    let views_text = '';
+    views_text += '<span style="color:black">View:</span><br>';
+
+    for (const key in views_keys) {
+        const active = views_keys[key];
+        const color = active ? 'red' : 'gray';
+
+        views_text += `<span style="color:${color};">${key}</span><br>`;
+    }
+
+    viewKeysDiv.innerHTML = views_text;
+}
+
+function updateMovementKeys() {
+    const movementKeysDiv = document.getElementById('movement');
+    let movement_text = '';
+    movement_text += '<span style="color:black">Movement:</span><br>';
+
+    for (const key in movement_keys) {
+        const active = movement_keys[key];
+        const color = active ? 'red' : 'gray';
+
+        movement_text += `<span style="color:${color};">${key}</span><br>`;
+    }
+
+    movementKeysDiv.innerHTML = movement_text;
+}
+
 
 init();
 animate();

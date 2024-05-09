@@ -15,7 +15,10 @@ var scene, renderer, clock;
 // meshes
 var geometry, eixoMaterial, mesh, material, containerMaterial, containerBaseMaterial, dodecahedronCargoMaterial, icosahedronCargoMaterial, torusCargoMaterial;
 var cabineMaterial, lancaMaterial, contraLancaMaterial, portaLancaMaterial, caboMaterial, tiranteMaterial, contraPesoMaterial, carroMaterial, garraMaterial;
-var baseMaterial;
+var baseMaterial, cubeCargoMaterial, torusKnotMaterial;
+
+// bounding volumes
+var garraBoundingBox, cargo1BoundingSphere, cargo2BoundingSphere, cargo3BoundingSphere;
 
 // measurements
 var L_base = 9;
@@ -80,6 +83,8 @@ function createScene(){
     createDodecahedronCargo(-20, 2, -10);
     createIcosahedronCargo(10, 2.5, -17);
     createTorusCargo(-25, 2.5, 15);
+    createCubeCargo(-5, 2.4, -16);
+    createTorusKnotCargo(-6, 1, 20);
 }
 //////////////////////
 /* CREATE CAMERA(S) */
@@ -396,6 +401,9 @@ function createGreatGrandson(obj, x, y, z) {
     greatgrandson.position.x = x;
     greatgrandson.position.y = y;
     greatgrandson.position.z = z;
+
+    garraBoundingBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+    garraBoundingBox.setFromObject(greatgrandson);
 }
 
 function addGarra(obj, x, y, z) {
@@ -516,6 +524,32 @@ function createTorusCargo(x, y, z) {
     torusCargo.add(mesh);
 }
 
+function createCubeCargo(x, y, z) {
+    'use strict';
+
+    var cubeCargo = new THREE.Object3D();
+    cubeCargoMaterial = new THREE.MeshBasicMaterial({color: 0xE77828, wireframe: true});
+    scene.add(cubeCargo);
+
+    geometry = new THREE.BoxGeometry(5, 5, 5);
+    mesh = new THREE.Mesh(geometry, cubeCargoMaterial);
+    mesh.position.set(x, y, z);
+    cubeCargo.add(mesh);
+}
+
+function createTorusKnotCargo(x, y, z) {
+    'use strict';
+
+    var torusKnotCargo = new THREE.Object3D();
+    torusKnotMaterial = new THREE.MeshBasicMaterial({color: 0xF06292, wireframe: true});
+    scene.add(torusKnotCargo);
+
+    geometry = new THREE.TorusKnotGeometry();
+    mesh = new THREE.Mesh(geometry, torusKnotMaterial);
+    mesh.position.set(x, y, z);
+    torusKnotCargo.add(mesh);
+}
+
 //////////////////////
 /* CHECK COLLISIONS */
 //////////////////////
@@ -588,7 +622,15 @@ function update(){
                 }
             });
             greatgrandson.userData.vertical_desloc -= greatgrandson.userData.vertical_speed * timeElapsed;
-    }
+            console.log("###############################################################")
+            console.log("Minimum X:", garraBoundingBox.min.x);
+            console.log("Minimum Y:", garraBoundingBox.min.y);
+            console.log("Minimum Z:", garraBoundingBox.min.z);
+
+            console.log("Maximum X:", garraBoundingBox.max.x);
+            console.log("Maximum Y:", garraBoundingBox.max.y);
+            console.log("Maximum Z:", garraBoundingBox.max.z);
+;    }
 
     // Claw closing
     if (greatgrandson.userData.closeClaw) {
@@ -734,7 +776,9 @@ function onKeyDown(e) {
                 tiranteMaterial,
                 carroMaterial,
                 contraPesoMaterial,
-                garraMaterial
+                garraMaterial,
+                torusKnotMaterial,
+                cubeCargoMaterial
                 ];
         
             materials.forEach(function(mat) {

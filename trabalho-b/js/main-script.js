@@ -87,14 +87,14 @@ const views_keys = {
 };
 
 const movement_keys = {
-    'Q' : false,
-    'A' : false,
-    'W' : false,
-    'S' : false,
-    'E' : false,
-    'D' : false,
-    'R' : false,
-    'F' : false,
+    'Positive rotation (Q)' : false,
+    'Negative rotation (A)' : false,
+    'Outwards car movement (W)' : false,
+    'Inwards car movement (S)' : false,
+    'Upwards cable movement (E)' : false,
+    'Downwards cable movement (D)' : false,
+    'Claw opening (R)' : false,
+    'Claw closing (F)' : false,
 };
 
 /////////////////////
@@ -622,12 +622,6 @@ function update(){
 
     var timeElapsed = clock.getDelta();
 
-    greatgrandson.children.forEach (child => {
-        if (child.name === "garra") {
-            // atualizar posição da esfera
-        }
-    })
-
     // Top section rotation
     if (son.userData.positiveRotation) {
         son.rotateY(son.userData.speed * timeElapsed);
@@ -847,38 +841,38 @@ function onKeyDown(e) {
         // superior section rotation
         case 81: // Q/q
             son.userData.positiveRotation = true;
-            movement_keys['Q'] = true;
+            movement_keys['Positive rotation (Q)'] = true;
             break;
         case 65: // A/a
             son.userData.negativeRotation = true;
-            movement_keys['A'] = true;
+            movement_keys['Negative rotation (A)'] = true;
             break;
         // car movement
         case 87: // W/w
             grandson.userData.movingOut = true;
-            movement_keys['W'] = true;
+            movement_keys['Outwards car movement (W)'] = true;
             break;
         case 83: // S/s
             grandson.userData.movingIn = true;
-            movement_keys['S'] = true;
+            movement_keys['Inwards car movement (S)'] = true;
             break;
         // claw's vertical movement
         case 69: // E/e
             greatgrandson.userData.cableGoingUp = true;
-            movement_keys['E'] = true;
+            movement_keys['Upwards cable movement (E)'] = true;
             break;
         case 68: // D/d
             greatgrandson.userData.cableGoingDown = true;
-            movement_keys['D'] = true;
+            movement_keys['Downwards cable movement (D)'] = true;
             break;
         //claw's opening/closing movement
         case 82: // R/r
             greatgrandson.userData.openClaw = true;
-            movement_keys['R'] = true;
+            movement_keys['Claw opening (R)'] = true;
             break;
         case 70: // F/f
             greatgrandson.userData.closeClaw = true;
-            movement_keys['F'] = true;
+            movement_keys['Claw closing (F)'] = true;
             break;
     }
 }
@@ -915,39 +909,39 @@ function onKeyUp(e){
         // superior section rotation
         case 81: // Q/q
             son.userData.positiveRotation = false;
-            movement_keys['Q'] = false;
+            movement_keys['Positive rotation (Q)'] = false;
             break;
         case 65: // A/a
             son.userData.negativeRotation = false;
-            movement_keys['A'] = false;
+            movement_keys['Negative rotation (A)'] = false;
             break;
         // car movement
         case 87: // W/w
             grandson.userData.movingOut = false;
-            movement_keys['W'] = false;
+            movement_keys['Outwards car movement (W)'] = false;
             break;
         case 83: // S/s
         case 115: // s
             grandson.userData.movingIn = false;
-            movement_keys['S'] = false;
+            movement_keys['Inwards car movement (S)'] = false;
             break;
         // claw's vertical movement
         case 69: // E/e
             greatgrandson.userData.cableGoingUp = false;
-            movement_keys['E'] = false;
+            movement_keys['Upwards cable movement (E)'] = false;
             break;
         case 68: // D/d
             greatgrandson.userData.cableGoingDown = false;
-            movement_keys['D'] = false;
+            movement_keys['Downwards cable movement (D)'] = false;
             break;
         //claw's opening/closing movement
         case 82: // R/r
             greatgrandson.userData.openClaw = false;
-            movement_keys['R'] = false;
+            movement_keys['Claw opening (R)'] = false;
             break;
         case 70: // F/f
             greatgrandson.userData.closeClaw = false;
-            movement_keys['F'] = false;
+            movement_keys['Claw closing (F)'] = false;
             break;
     }
 }

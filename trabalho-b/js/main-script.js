@@ -183,6 +183,8 @@ function createFather(x, y, z) {
     addTorre(father, 0, h_torre/2 + h_base/2, 0);
 
     scene.add(father);
+    father.add(new THREE.AxesHelper(10));
+
 
     father.position.x = x;
     father.position.y = y;
@@ -227,6 +229,8 @@ function createSon(obj, x, y, z) {
     addTirante(son, - c_tirante2 / 2 + 0.8, h_porta_lanca + h_lanca / 2 - 0.2, 0, c_tirante2, 1);
 
     obj.add(son);
+    son.add(new THREE.AxesHelper(10));
+
     son.position.x = x;
     son.position.y = y;
     son.position.z = z;
@@ -340,12 +344,13 @@ function createGrandson(obj, x, y, z) {
     addCabo(grandson, 0, -initial_delta2/2, 0);
 
     obj.add(grandson);
+    grandson.add(new THREE.AxesHelper(10));
 
     grandson.position.x = x;
     grandson.position.y = y;
     grandson.position.z = z;
 
-    createGreatGrandson(grandson, 0, 0, 0);
+    createGreatGrandson(grandson, 0, -initial_delta2, 0);
 }
 
 function addCarro(obj, x, y, z) {
@@ -375,20 +380,21 @@ function createGreatGrandson(obj, x, y, z) {
     
     greatgrandson = new THREE.Object3D();
     greatgrandson.userData = {cableGoingDown: false, cableGoingUp: false,
-                        maxCableTranslationLimit: h_garra * 2,
+                        maxCableTranslationLimit: h_garra * 6,
                         minCableTranslationLimit: -(h_torre/2),
                         vertical_speed: 5, vertical_desloc: 0,
                         openClaw: false, closeClaw: false,
-                        claw_speed: 0.005}
+                        claw_speed: 0.3}
 
-    addGarra(greatgrandson, 0, -initial_delta2, 0);
-    addDedo(greatgrandson, -L_dedo_body/2 - L_dedo_tip, -initial_delta2 - (h_garra/2) - h_dedo_body/2, L_dedo_body/2 + L_dedo_tip, '1');
-    addDedo(greatgrandson, L_dedo_body/2 + L_dedo_tip, -initial_delta2 - (h_garra/2) - h_dedo_body/2, L_dedo_body/2 + L_dedo_tip, '2');
-    addDedo(greatgrandson, L_dedo_body/2 + L_dedo_tip, -initial_delta2 - (h_garra/2) - h_dedo_body/2, -L_dedo_body/2 - L_dedo_tip, '3');
-    addDedo(greatgrandson, -L_dedo_body/2 - L_dedo_tip, -initial_delta2 - (h_garra/2) - h_dedo_body/2, -L_dedo_body/2 - L_dedo_tip, '4');
-    createCamera6(0, -initial_delta2 - L_dedo_body, 0);
+    addGarra(greatgrandson, 0, 0, 0);
+    addDedo(greatgrandson, -L_dedo_body/2 - L_dedo_tip, - (h_garra/2) - h_dedo_body/2, L_dedo_body/2 + L_dedo_tip, '1');
+    addDedo(greatgrandson, L_dedo_body/2 + L_dedo_tip, - (h_garra/2) - h_dedo_body/2, L_dedo_body/2 + L_dedo_tip, '2');
+    addDedo(greatgrandson, L_dedo_body/2 + L_dedo_tip, - (h_garra/2) - h_dedo_body/2, -L_dedo_body/2 - L_dedo_tip, '3');
+    addDedo(greatgrandson, -L_dedo_body/2 - L_dedo_tip, - (h_garra/2) - h_dedo_body/2, -L_dedo_body/2 - L_dedo_tip, '4');
+    createCamera6(0, - L_dedo_body, 0);
 
     obj.add(greatgrandson);
+    greatgrandson.add(new THREE.AxesHelper(10));
 
     greatgrandson.position.x = x;
     greatgrandson.position.y = y;
@@ -603,16 +609,16 @@ function update(){
     if (greatgrandson.userData.closeClaw) {
         greatgrandson.children.forEach (child => {
             if (child.name === '1') {
-                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), greatgrandson.userData.claw_speed);
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), greatgrandson.userData.claw_speed * timeElapsed);
             }
             if (child.name === '2') {
-                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), greatgrandson.userData.claw_speed);
+                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), greatgrandson.userData.claw_speed * timeElapsed);
             }
             if (child.name === '3') {
-                child.rotateOnAxis(new THREE.Vector3(1, 0, -1), greatgrandson.userData.claw_speed);
+                child.rotateOnAxis(new THREE.Vector3(1, 0, -1), greatgrandson.userData.claw_speed * timeElapsed);
             }
             if (child.name === '4') {
-                child.rotateOnAxis(new THREE.Vector3(-1, 0,-1), greatgrandson.userData.claw_speed);
+                child.rotateOnAxis(new THREE.Vector3(-1, 0,-1), greatgrandson.userData.claw_speed * timeElapsed);
             }
         })
     }
@@ -621,16 +627,16 @@ function update(){
     if (greatgrandson.userData.openClaw) {
         greatgrandson.children.forEach (child => {
             if (child.name === '1') {
-                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), -greatgrandson.userData.claw_speed);
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), -(greatgrandson.userData.claw_speed * timeElapsed));
             }
             if (child.name === '2') {
-                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), -greatgrandson.userData.claw_speed);
+                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), -(greatgrandson.userData.claw_speed * timeElapsed));
             }
             if (child.name === '3') {
-                child.rotateOnAxis(new THREE.Vector3(1, 0, -1), -greatgrandson.userData.claw_speed);
+                child.rotateOnAxis(new THREE.Vector3(1, 0, -1), -(greatgrandson.userData.claw_speed * timeElapsed));
             }
             if (child.name === '4') {
-                child.rotateOnAxis(new THREE.Vector3(-1, 0,-1), -greatgrandson.userData.claw_speed);
+                child.rotateOnAxis(new THREE.Vector3(-1, 0,-1), -(greatgrandson.userData.claw_speed * timeElapsed));
             }
         })
     }
@@ -662,6 +668,8 @@ function init() {
     createCamera5();
 
     currentCamera = camera1;
+
+    const controls = new OrbitControls(currentCamera, renderer.domElement);
 
     render();
 

@@ -3,3 +3,18 @@ body {
     background-color: #000;
     overflow: hidden;
 }
+
+#HUD {
+    font-family: Tahoma, sans-serif;
+    font-size: 14px;
+    margin: 10px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+#HUD span {
+    color: grey;
+    font-weight: bold;
+    font-size: 32px;
+}

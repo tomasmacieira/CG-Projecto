@@ -56,7 +56,7 @@ var rb_cabo = 0.1;
 
 var initial_delta2 = 9;
 var r_garra = 1.5;
-var h_garra = 1;
+var h_garra = 1.25;
 
 var L_dedo_body = 0.5;
 var h_dedo_body = 0.75;
@@ -386,13 +386,13 @@ function createGreatGrandson(obj, x, y, z) {
                         minCableTranslationLimit: -(h_torre/2),
                         vertical_speed: 5, vertical_desloc: 0,
                         openClaw: false, closeClaw: false,
-                        claw_speed: 0.3}
+                        claw_speed: 0.5}
 
     addGarra(greatgrandson, 0, 0, 0);
-    addDedo(greatgrandson, -L_dedo_body/2 - L_dedo_tip, - (h_garra/2) - h_dedo_body/2, L_dedo_body/2 + L_dedo_tip, '1');
-    addDedo(greatgrandson, L_dedo_body/2 + L_dedo_tip, - (h_garra/2) - h_dedo_body/2, L_dedo_body/2 + L_dedo_tip, '2');
-    addDedo(greatgrandson, L_dedo_body/2 + L_dedo_tip, - (h_garra/2) - h_dedo_body/2, -L_dedo_body/2 - L_dedo_tip, '3');
-    addDedo(greatgrandson, -L_dedo_body/2 - L_dedo_tip, - (h_garra/2) - h_dedo_body/2, -L_dedo_body/2 - L_dedo_tip, '4');
+    addDedo(greatgrandson, -L_dedo_body/2 - L_dedo_tip/2, -h_dedo_body/3, L_dedo_body/2 + L_dedo_tip/2, '1');
+    addDedo(greatgrandson, L_dedo_body/2 + L_dedo_tip/2, -h_dedo_body/3, L_dedo_body/2 + L_dedo_tip/2, '2');
+    addDedo(greatgrandson, L_dedo_body/2 + L_dedo_tip/2, -h_dedo_body/3, -L_dedo_body/2 - L_dedo_tip/2, '3');
+    addDedo(greatgrandson, -L_dedo_body/2 - L_dedo_tip/2, -h_dedo_body/3, -L_dedo_body/2 - L_dedo_tip/2, '4');
     createCamera6(0, - L_dedo_body, 0);
 
     obj.add(greatgrandson);
@@ -451,6 +451,7 @@ function addDedo(obj, x, y, z, number) {
     dedo.add(mesh_body);
     dedo.add(mesh_tip);
     dedo.name = number;
+    dedo.position.set(x, y, z);
     obj.add(dedo);
 }
 
@@ -636,16 +637,16 @@ function update(){
     if (greatgrandson.userData.closeClaw) {
         greatgrandson.children.forEach (child => {
             if (child.name === '1') {
-                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, -1),  -(greatgrandson.userData.claw_speed * timeElapsed));
             }
             if (child.name === '2') {
-                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(1, 0, -1),  greatgrandson.userData.claw_speed * timeElapsed);
             }
             if (child.name === '3') {
-                child.rotateOnAxis(new THREE.Vector3(1, 0, -1), greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), -(greatgrandson.userData.claw_speed * timeElapsed));
             }
             if (child.name === '4') {
-                child.rotateOnAxis(new THREE.Vector3(-1, 0,-1), greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), greatgrandson.userData.claw_speed * timeElapsed);
             }
         })
     }
@@ -654,16 +655,16 @@ function update(){
     if (greatgrandson.userData.openClaw) {
         greatgrandson.children.forEach (child => {
             if (child.name === '1') {
-                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), -(greatgrandson.userData.claw_speed * timeElapsed));
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, -1), greatgrandson.userData.claw_speed * timeElapsed);
             }
             if (child.name === '2') {
-                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), -(greatgrandson.userData.claw_speed * timeElapsed));
-            }
-            if (child.name === '3') {
                 child.rotateOnAxis(new THREE.Vector3(1, 0, -1), -(greatgrandson.userData.claw_speed * timeElapsed));
             }
+            if (child.name === '3') {
+                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), greatgrandson.userData.claw_speed * timeElapsed);
+            }
             if (child.name === '4') {
-                child.rotateOnAxis(new THREE.Vector3(-1, 0,-1), -(greatgrandson.userData.claw_speed * timeElapsed));
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), -(greatgrandson.userData.claw_speed * timeElapsed));
             }
         })
     }

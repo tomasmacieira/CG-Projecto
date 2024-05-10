@@ -107,6 +107,7 @@ const movement_keys = {
 // animation
 var animating = false;
 var part2 = false;
+var rotateNegative = false;
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -677,9 +678,14 @@ function handleCollisions(mesh, timeElapsed){
     part2 = true;
 
     // part3 - crane rotating
-    if (son.userData.crane_angle > -0.40) {
+    if (!rotateNegative && son.userData.crane_angle > -0.40) {
         son.rotateY(-(son.userData.speed * timeElapsed));
         son.userData.crane_angle -= (son.userData.speed * timeElapsed);
+        return;
+    } else if (son.userData.crane_angle < -0.40) {
+        son.rotateY((son.userData.speed * timeElapsed));
+        son.userData.crane_angle += (son.userData.speed * timeElapsed);
+        rotateNegative = true;
         return;
     }
 

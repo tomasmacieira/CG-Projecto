@@ -422,7 +422,7 @@ function createGreatGrandson(obj, x, y, z) {
     greatgrandson = new THREE.Object3D();
     greatgrandson.userData = {cableGoingDown: false, cableGoingUp: false,
                         maxCableTranslationLimit: h_hook * 5,
-                        minCableTranslationLimit: -h_tower + h_base + h_hook + h_trolley,/*-(h_tower/2 + 10),*/
+                        minCableTranslationLimit: -h_tower + h_base + h_hook + h_trolley + 3,/*-(h_tower/2 + 10),*/
                         vertical_speed: 5, 
                         vertical_desloc: 0, //remover
                         openClaw: false, closeClaw: false,
@@ -601,27 +601,35 @@ function checkCollisions(){
         console.log("Detectou 1");
         animating = true;
         greatgrandson.attach(cubeCargoMesh);
-        console.log(greatgrandson.userData.vertical_desloc);
+        return cubeCargoMesh;
     }
     // check collision with dodecahedron
     if (hasCollision(dodecahedronRadius, greatGrandSonRadius, dodecahedronCargoMesh, greatgrandson)) {
         console.log("Detectou 2");
         animating = true;
+        greatgrandson.attach(dodecahedronCargoMesh);
+        return dodecahedronCargoMesh;
     }
     // check collision with isocahedron
     if (hasCollision(isocahedronRadius, greatGrandSonRadius, isocahedronCargoMesh, greatgrandson)) {
         console.log("Detectou 3");
         animating = true;
+        greatgrandson.attach(isocahedronCargoMesh);
+        return isocahedronCargoMesh;
     }
     // check collision with Torus
     if (hasCollision(torusRadius, greatGrandSonRadius, torusCargoMesh, greatgrandson)) {
         console.log("Detectou 4");
         animating = true;
+        greatgrandson.attach(torusCargoMesh);
+        return torusCargoMesh;
     }
     // check collision with TorusKnot
     if (hasCollision(torusKnotRadius, greatGrandSonRadius, torusKnotCargoMesh, greatgrandson)) {
         console.log("Detectou 5");
         animating = true;
+        greatgrandson.attach(torusKnotCargoMesh);
+        return torusKnotCargoMesh;
     }
 
 }
@@ -629,17 +637,14 @@ function checkCollisions(){
 ///////////////////////
 /* HANDLE COLLISIONS */
 ///////////////////////
-function handleCollisions(timeElapsed){
+function handleCollisions(mesh, timeElapsed){
     'use strict';
 
-    // gancho down -21.585
-
-    // Cable going upwards
+    // part1
     if (!part1 && greatgrandson.userData.vertical_desloc < -5) {
         greatgrandson.translateY(greatgrandson.userData.vertical_speed * timeElapsed);
         grandson.children.forEach (child => {
             if (child.name === "cabo") {
-                console.log("asdasd");
                 child.scale.y -= (greatgrandson.userData.vertical_speed * timeElapsed)/child.geometry.parameters.height;
                 child.translateY((greatgrandson.userData.vertical_speed * timeElapsed)/2);
             }
@@ -649,15 +654,21 @@ function handleCollisions(timeElapsed){
     }
     part1 = true;
 
+    // part2
     if (son.userData.crane_angle > -0.40) {
         son.rotateY(-(son.userData.speed * timeElapsed));
         son.userData.crane_angle -= (son.userData.speed * timeElapsed);
         return;
     }
 
-    // -0,2 carro para fora
+    // part3
+    if (grandson.userData.horizontal_desloc < -0.2) {
+        grandson.translateX(grandson.userData.horizontal_speed * timeElapsed);
+        grandson.userData.horizontal_desloc += (grandson.userData.horizontal_speed * timeElapsed);
+        return;
+    }
 
-    // Cable going downwards
+    // part4
     if (greatgrandson.userData.vertical_desloc > -18.5) {
         greatgrandson.translateY(-(greatgrandson.userData.vertical_speed * timeElapsed));
         grandson.children.forEach (child => {
@@ -669,7 +680,13 @@ function handleCollisions(timeElapsed){
         greatgrandson.userData.vertical_desloc -= greatgrandson.userData.vertical_speed * timeElapsed;
         return;
     }
+    
+    // part5
+    mesh.parent.remove(mesh);
+    scene.remove(mesh);
 
+
+    part1 = false;
     animating = false;
 }
 
@@ -696,13 +713,11 @@ function update(){
     if (grandson.userData.movingOut && (grandson.userData.horizontal_desloc < grandson.userData.maxCarTranslationLimit)) {
         grandson.translateX(grandson.userData.horizontal_speed * timeElapsed);
         grandson.userData.horizontal_desloc += (grandson.userData.horizontal_speed * timeElapsed);
-        console.log(grandson.userData.horizontal_desloc)
     }
 
     if (grandson.userData.movingIn && (grandson.userData.horizontal_desloc > grandson.userData.minCarTranslationLimit)) {
         grandson.translateX(-(grandson.userData.horizontal_speed * timeElapsed));
         grandson.userData.horizontal_desloc -= (grandson.userData.horizontal_speed * timeElapsed);
-        console.log(grandson.userData.horizontal_desloc)
     }
     
     // Cable going upwards
@@ -776,10 +791,10 @@ function update(){
     updateViewKeys();
     updateMovementKeys();
     if (!animating) {
-        checkCollisions();
+        mesh = checkCollisions();
     }
     if (animating) {
-        handleCollisions(timeElapsed);
+        handleCollisions(mesh, timeElapsed);
     }
 }
 

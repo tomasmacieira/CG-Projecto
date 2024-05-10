@@ -16,10 +16,15 @@ var scene, renderer, clock;
 var cubeCargoMesh, dodecahedronCargoMesh, isocahedronCargoMesh, torusCargoMesh, torusKnotCargoMesh;
 
 // meshes & materials
-var geometry, axisMaterial, mesh, material, containerMaterial, containerBaseMaterial, dodecahedronCargoMaterial;
-var icosahedronCargoMaterial, torusCargoMaterial, cabineMaterial, frontJibMaterial, counterJibMaterial;
-var portafrontJibMaterial, caboMaterial, tiranteMaterial, counterWeightMaterial, trolleyMaterial, garraMaterial;
-var baseMaterial, cubeCargoMaterial, torusKnotMaterial;
+var geometry, mesh;
+var cubeCargoMaterial,  icosahedronCargoMaterial, torusCargoMaterial, torusKnotMaterial, dodecahedronCargoMaterial;
+var containerBaseMaterial, containerMaterial;
+var axisMaterial, cabinMaterial, cableMaterial;
+
+var counterWeightMaterial, trolleyMaterial, garraMaterial;
+var baseMaterial;
+
+var metalMaterial;
 
 // Radii
 const greatGrandSonRadius = 1.5; 
@@ -100,7 +105,7 @@ const movement_keys = {
 
 // animation
 var animating = false;
-var part1 = false;
+var part2 = false;
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -119,6 +124,7 @@ function createScene(){
     floor.rotateX(-Math.PI/2);
     floor.position.y = -1;
 
+    createMaterials();
 
     createFather(0, h_base/2, 0);
 
@@ -129,6 +135,27 @@ function createScene(){
     createCubeCargo(-5, 2.4, -16);
     createTorusKnotCargo(-6, 1, 20);
 }
+
+function createMaterials() {
+    metalMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: true });
+
+    cableMaterial = new THREE.MeshBasicMaterial({ color: 0x322C2B, wireframe: true });
+    cabinMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: true });
+    baseMaterial = new THREE.MeshBasicMaterial({ color: 0x322C2B, wireframe: true });    
+    axisMaterial = new THREE.MeshBasicMaterial({ color: 0xFEEFAD, wireframe: true });
+    counterWeightMaterial = new THREE.MeshBasicMaterial({ color: 0xF6E9B2, wireframe: true });
+    trolleyMaterial = new THREE.MeshBasicMaterial({ color: 0xFEEFAD, wireframe: true });
+
+    torusKnotMaterial = new THREE.MeshBasicMaterial({color: 0xF06292, wireframe: true});
+    cubeCargoMaterial = new THREE.MeshBasicMaterial({color: 0xE77828, wireframe: true});
+    torusCargoMaterial = new THREE.MeshBasicMaterial({color: 0xaacc00, wireframe: true});
+    dodecahedronCargoMaterial = new THREE.MeshBasicMaterial({ color: 0x45c58a, wireframe: true});
+    icosahedronCargoMaterial = new THREE.MeshBasicMaterial({color: 0xcc4d97, wireframe: true});
+
+    containerMaterial = new THREE.MeshBasicMaterial({ color: 0xE72929, wireframe: true});
+    containerBaseMaterial = new THREE.MeshBasicMaterial({ color: 0xC40C0C, wireframe: true});
+}
+
 //////////////////////
 /* CREATE CAMERA(S) */
 //////////////////////
@@ -181,7 +208,7 @@ function createCamera4() {
     camera4.position.x = 50;
     camera4.position.y = 50;
     camera4.position.z = 50;
-    camera4.lookAt(scene.position);
+    camera4.lookAt(0, 17, 0);
 }
 
 function createCamera5() {
@@ -222,8 +249,6 @@ function createFather(x, y, z) {
 
     father = new THREE.Object3D();
 
-    material = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: true });
-
     addBase(father, 0, 0, 0);
     addTower(father, 0, h_tower/2 + h_base/2, 0);
 
@@ -241,7 +266,6 @@ function addBase(obj, x, y, z) {
     // BoxGeometry(width, height, length)
 
     geometry = new THREE.BoxGeometry(L_base, h_base, L_base);
-    baseMaterial = new THREE.MeshBasicMaterial({ color: 0x322C2B, wireframe: true });
     mesh = new THREE.Mesh(geometry, baseMaterial);
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -251,7 +275,7 @@ function addTower(obj, x, y, z) {
     'use strict';
     // BoxGeometry(width, height, length)
     geometry = new THREE.BoxGeometry(L_tower, h_tower, L_tower);
-    mesh = new THREE.Mesh(geometry, material);
+    mesh = new THREE.Mesh(geometry, metalMaterial);
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -284,8 +308,7 @@ function addCabin(obj, x, y, z) {
     'use string';
 
     geometry = new THREE.BoxGeometry(L_tower, 3, L_tower);
-    cabineMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: true });
-    mesh = new THREE.Mesh(geometry, cabineMaterial);
+    mesh = new THREE.Mesh(geometry, cabinMaterial);
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -294,8 +317,7 @@ function addJibCable(obj, x, y, z, c_tirante, direction) {
     'use strict';
 
     geometry = new THREE.CylinderGeometry(0.1,0.1, c_tirante);
-    tiranteMaterial = new THREE.MeshBasicMaterial({ color: 0x322C2B, wireframe: true });
-    mesh = new THREE.Mesh(geometry, tiranteMaterial);
+    mesh = new THREE.Mesh(geometry, cableMaterial);
     mesh.position.set(x, y, z);
     var angle = ((Math.PI/2) - Math.asin(h_towerPeak / c_tirante));
     mesh.rotation.z = angle; // Rotate around the Z axis 
@@ -307,7 +329,6 @@ function addJibCable(obj, x, y, z, c_tirante, direction) {
 function addRotationAxis(obj, x, y, z) {
     'use strict';
     // CylinderGeometry(radiusTop, radiusBottom, height, heightSegments)
-    axisMaterial = new THREE.MeshBasicMaterial({ color: 0xFEEFAD, wireframe: true });
     geometry = new THREE.CylinderGeometry(L_tower/2 - 0.2, L_tower/2 - 0.2, h_axis, 16);
     mesh = new THREE.Mesh(geometry, axisMaterial);
     mesh.position.set(x, y, z);
@@ -318,8 +339,7 @@ function addFrontJib(obj, x, y, z) {
     'use strict';
     // BoxGeometry(width, height, length)
     geometry = new THREE.BoxGeometry(L_frontJib, h_frontJib, h_frontJib);
-    frontJibMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: true });
-    mesh = new THREE.Mesh(geometry, frontJibMaterial);
+    mesh = new THREE.Mesh(geometry, metalMaterial);
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -328,8 +348,7 @@ function addCounterJib(obj, x, y, z) {
     'use strict';
     // BoxGeometry(width, height, length)
     geometry = new THREE.BoxGeometry(L_counterJib, h_counterJib, h_counterJib);
-    counterJibMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: true });
-    mesh = new THREE.Mesh(geometry, counterJibMaterial);
+    mesh = new THREE.Mesh(geometry, metalMaterial);
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -356,8 +375,7 @@ function addTowerPeak(obj, x, y, z) {
     geometry.setIndex( indices );
     geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
 
-    portafrontJibMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: true });
-    mesh = new THREE.Mesh(geometry, portafrontJibMaterial);
+    mesh = new THREE.Mesh(geometry, metalMaterial);
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -366,7 +384,6 @@ function addCounterWeight(obj, x, y, z) {
     'use strict';
     // BoxGeometry(width, height, length)
     geometry = new THREE.BoxGeometry(L_counterWeight, h_counterWeight, c_counterWeight - 1);
-    counterWeightMaterial = new THREE.MeshBasicMaterial({ color: 0xF6E9B2, wireframe: true });
     mesh = new THREE.Mesh(geometry, counterWeightMaterial);
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -398,7 +415,6 @@ function addTrolley(obj, x, y, z) {
     'use strict';
     // BoxGeometry(width, height, length)
     geometry = new THREE.BoxGeometry(L_trolley, h_trolley, h_frontJib);
-    trolleyMaterial = new THREE.MeshBasicMaterial({ color: 0xFEEFAD, wireframe: true });
     mesh = new THREE.Mesh(geometry, trolleyMaterial);
     mesh.position.set(x, y, z);
     mesh.name = "trolley";
@@ -409,8 +425,7 @@ function addTrolleyCable(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.CylinderGeometry(trolleyCableRadius, trolleyCableRadius, initial_delta2);
-    caboMaterial = new THREE.MeshBasicMaterial({ color: 0x322C2B, wireframe: true });
-    mesh = new THREE.Mesh(geometry, caboMaterial);
+    mesh = new THREE.Mesh(geometry, cableMaterial);
     mesh.position.set(x, y, z);
     mesh.name = "cabo";
     obj.add(mesh);
@@ -485,7 +500,7 @@ function addClaw(obj, x, y, z, number) {
     geometry_tip.setIndex( indices );
     geometry_tip.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
 
-    var mesh_tip = new THREE.Mesh(geometry_tip, material);
+    var mesh_tip = new THREE.Mesh(geometry_tip, metalMaterial);
     mesh_tip.position.set(x, y, z);
        
     dedo.add(mesh_body);
@@ -499,7 +514,6 @@ function createContainer(x, y, z) {
     'use strict';
 
     var container = new THREE.Object3D();
-    containerMaterial = new THREE.MeshBasicMaterial({ color: 0xE72929, wireframe: true});
     scene.add(container);
 
     addContainerBase(container, x, y, z);
@@ -512,7 +526,6 @@ function createContainer(x, y, z) {
 function addContainerBase(obj, x, y, z) {
     'use strict';
     geometry = new THREE.BoxGeometry(L_container, 0.3, h_container);
-    containerBaseMaterial = new THREE.MeshBasicMaterial({ color: 0xC40C0C, wireframe: true});
     mesh = new THREE.Mesh(geometry, containerBaseMaterial);
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -528,9 +541,6 @@ function addContainerWall(obj, x, y, z, largura, altura, espessura) {
 
 function createDodecahedronCargo(x, y, z) {
     'use strict';
-
-    dodecahedronCargoMaterial = new THREE.MeshBasicMaterial({ color: 0x45c58a, wireframe: true});
-
     geometry = new THREE.DodecahedronGeometry(3);
     dodecahedronCargoMesh = new THREE.Mesh(geometry, dodecahedronCargoMaterial);
     dodecahedronCargoMesh.position.set(x, y, z);
@@ -539,9 +549,6 @@ function createDodecahedronCargo(x, y, z) {
 
 function createIcosahedronCargo(x, y, z) {
     'use strict';
-
-    icosahedronCargoMaterial = new THREE.MeshBasicMaterial({color: 0xcc4d97, wireframe: true});
-
     geometry = new THREE.IcosahedronGeometry(3);
     isocahedronCargoMesh = new THREE.Mesh(geometry, icosahedronCargoMaterial);
     isocahedronCargoMesh.position.set(x, y, z);
@@ -550,9 +557,6 @@ function createIcosahedronCargo(x, y, z) {
 
 function createTorusCargo(x, y, z) {
     'use strict';
-
-    torusCargoMaterial = new THREE.MeshBasicMaterial({color: 0xaacc00, wireframe: true});
-
     geometry = new THREE.TorusGeometry(2.4, 1.5, 7, 10, 10);
     torusCargoMesh = new THREE.Mesh(geometry, torusCargoMaterial);
     torusCargoMesh.position.set(x, y, z);
@@ -561,9 +565,6 @@ function createTorusCargo(x, y, z) {
 
 function createCubeCargo(x, y, z) {
     'use strict';
-
-    cubeCargoMaterial = new THREE.MeshBasicMaterial({color: 0xE77828, wireframe: true});
-
     geometry = new THREE.BoxGeometry(3, 3, 3);
     cubeCargoMesh = new THREE.Mesh(geometry, cubeCargoMaterial);
     cubeCargoMesh.position.set(x, y, z);
@@ -572,9 +573,6 @@ function createCubeCargo(x, y, z) {
 
 function createTorusKnotCargo(x, y, z) {
     'use strict';
-
-    torusKnotMaterial = new THREE.MeshBasicMaterial({color: 0xF06292, wireframe: true});
-    
     geometry = new THREE.TorusKnotGeometry();
     torusKnotCargoMesh = new THREE.Mesh(geometry, torusKnotMaterial);
     torusKnotCargoMesh.position.set(x, y, z);
@@ -640,8 +638,31 @@ function checkCollisions(){
 function handleCollisions(mesh, timeElapsed){
     'use strict';
 
-    // part1
-    if (!part1 && greatgrandson.userData.vertical_desloc < -5) {
+    // part1 - claw closing
+    if (!part2 && greatgrandson.userData.claw_angle < greatgrandson.userData.maxAngleLimit) {
+        greatgrandson.children.forEach (child => {
+            if (child.name === '1') {
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, -1),  -(greatgrandson.userData.claw_speed * timeElapsed));
+                greatgrandson.userData.claw_angle += (greatgrandson.userData.claw_speed * timeElapsed);
+            }
+            if (child.name === '2') {
+                child.rotateOnAxis(new THREE.Vector3(1, 0, -1),  greatgrandson.userData.claw_speed * timeElapsed);
+                greatgrandson.userData.claw_angle += (greatgrandson.userData.claw_speed * timeElapsed);
+            }
+            if (child.name === '3') {
+                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), -(greatgrandson.userData.claw_speed * timeElapsed));
+                greatgrandson.userData.claw_angle += (greatgrandson.userData.claw_speed * timeElapsed);
+            }
+            if (child.name === '4') {
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), greatgrandson.userData.claw_speed * timeElapsed);
+                greatgrandson.userData.claw_angle += (greatgrandson.userData.claw_speed * timeElapsed);
+            }
+        })
+        return;
+    }
+
+    // part2 - claw going up
+    if (!part2 && greatgrandson.userData.vertical_desloc < -5) {
         greatgrandson.translateY(greatgrandson.userData.vertical_speed * timeElapsed);
         grandson.children.forEach (child => {
             if (child.name === "cabo") {
@@ -652,23 +673,23 @@ function handleCollisions(mesh, timeElapsed){
         greatgrandson.userData.vertical_desloc += (greatgrandson.userData.vertical_speed * timeElapsed);
         return;
     }
-    part1 = true;
+    part2 = true;
 
-    // part2
+    // part3 - crane rotating
     if (son.userData.crane_angle > -0.40) {
         son.rotateY(-(son.userData.speed * timeElapsed));
         son.userData.crane_angle -= (son.userData.speed * timeElapsed);
         return;
     }
 
-    // part3
+    // part4 - car moving
     if (grandson.userData.horizontal_desloc < -0.2) {
         grandson.translateX(grandson.userData.horizontal_speed * timeElapsed);
         grandson.userData.horizontal_desloc += (grandson.userData.horizontal_speed * timeElapsed);
         return;
     }
 
-    // part4
+    // part5 - claw going down
     if (greatgrandson.userData.vertical_desloc > -18.5) {
         greatgrandson.translateY(-(greatgrandson.userData.vertical_speed * timeElapsed));
         grandson.children.forEach (child => {
@@ -681,12 +702,32 @@ function handleCollisions(mesh, timeElapsed){
         return;
     }
     
-    // part5
+    // part6 - claw opening
+    if (greatgrandson.userData.claw_angle > 0) {
+        greatgrandson.children.forEach (child => {
+            if (child.name === '1') {
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, -1), greatgrandson.userData.claw_speed * timeElapsed);
+                greatgrandson.userData.claw_angle -= (greatgrandson.userData.claw_speed * timeElapsed);
+            }
+            if (child.name === '2') {
+                child.rotateOnAxis(new THREE.Vector3(1, 0, -1), -(greatgrandson.userData.claw_speed * timeElapsed));
+                greatgrandson.userData.claw_angle -= (greatgrandson.userData.claw_speed * timeElapsed);
+            }
+            if (child.name === '3') {
+                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), greatgrandson.userData.claw_speed * timeElapsed);
+                greatgrandson.userData.claw_angle -= (greatgrandson.userData.claw_speed * timeElapsed);
+            }
+            if (child.name === '4') {
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), -(greatgrandson.userData.claw_speed * timeElapsed));
+                greatgrandson.userData.claw_angle -= (greatgrandson.userData.claw_speed * timeElapsed);
+            }
+        })
+        return;
+    }
+
     mesh.parent.remove(mesh);
-    scene.remove(mesh);
 
-
-    part1 = false;
+    part2 = false;
     animating = false;
 }
 
@@ -896,19 +937,15 @@ function onKeyDown(e) {
         case 55: // 7
             const materials = [
                 baseMaterial,
-                material,
                 containerMaterial,
                 dodecahedronCargoMaterial,
                 icosahedronCargoMaterial,
                 torusCargoMaterial,
                 containerBaseMaterial,
                 axisMaterial,
-                cabineMaterial,
-                frontJibMaterial,
-                counterJibMaterial,
-                portafrontJibMaterial,
-                caboMaterial,
-                tiranteMaterial,
+                cabinMaterial,
+                metalMaterial,
+                cableMaterial,
                 trolleyMaterial,
                 counterWeightMaterial,
                 garraMaterial,

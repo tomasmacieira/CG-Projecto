@@ -9,19 +9,17 @@ import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 //////////////////////
 
 // cameras, scene, renderer and clock
-var camera1, camera2, camera3, camera4, camera5, camera6, currentCamera;
-let previousCamera;
+var camera1, camera2, camera3, camera4, camera5, camera6, currentCamera, tempCamera, previousCamera;
 var scene, renderer, clock;
 
 // Cargos
-var cubeCargoMesh, dodecahedronCargoMesh, isocahedronCargoMesh, torusCargoMesh, torusKnotCargoMesh;
+var cubeCargoMesh, dodecahedronCargoMesh, icosahedronCargoMesh, torusCargoMesh, torusKnotCargoMesh;
 
 // meshes & materials
 var geometry, mesh;
-var cubeCargoMaterial,  icosahedronCargoMaterial, torusCargoMaterial, torusKnotMaterial, dodecahedronCargoMaterial;
+var cubeCargoMaterial,  icosahedronCargoMaterial, torusCargoMaterial, torusKnotCargoMaterial, dodecahedronCargoMaterial;
 var containerBaseMaterial, containerMaterial;
 var axisMaterial, cabinMaterial, cableMaterial;
-
 var counterWeightMaterial, trolleyMaterial, garraMaterial;
 var baseMaterial;
 
@@ -30,7 +28,7 @@ var metalMaterial;
 // Radii
 const greatGrandSonRadius = 1.5; 
 const cubeRadius = 2;
-const isocahedronRadius = 3;
+const icosahedronRadius = 3;
 const dodecahedronRadius = 3.5;
 const torusRadius = 4;
 const torusKnotRadius = 2;
@@ -148,7 +146,7 @@ function createMaterials() {
     counterWeightMaterial = new THREE.MeshBasicMaterial({ color: 0xF6E9B2, wireframe: true });
     trolleyMaterial = new THREE.MeshBasicMaterial({ color: 0xFEEFAD, wireframe: true });
 
-    torusKnotMaterial = new THREE.MeshBasicMaterial({color: 0xF06292, wireframe: true});
+    torusKnotCargoMaterial = new THREE.MeshBasicMaterial({color: 0xF06292, wireframe: true});
     cubeCargoMaterial = new THREE.MeshBasicMaterial({color: 0xE77828, wireframe: true});
     torusCargoMaterial = new THREE.MeshBasicMaterial({color: 0xaacc00, wireframe: true});
     dodecahedronCargoMaterial = new THREE.MeshBasicMaterial({ color: 0x45c58a, wireframe: true});
@@ -161,82 +159,23 @@ function createMaterials() {
 //////////////////////
 /* CREATE CAMERA(S) */
 //////////////////////
-function createCamera1() {
+function createOrthographicCamera(x, y, z) {
     'use strict';
     // OrthographicCamera(left, right, top, bottom, near, far)
-    camera1 = new THREE.OrthographicCamera(window.innerWidth / -20,
+    tempCamera = new THREE.OrthographicCamera(window.innerWidth / -20,
         window.innerWidth / 20, window.innerHeight / 20, 
         window.innerHeight / -20, 1, 1000);
-    
-    camera1.position.x = 0;
-    camera1.position.y = h_tower/2;
-    camera1.position.z = 50;
-    camera1.lookAt(0, h_tower/2, 0)
+    tempCamera.position.set(x, y, z);
+    return tempCamera;
 }
 
-function createCamera2() {
-    'use strict';
-    // OrthographicCamera(left, right, top, bottom, near, far)
-    camera2 = new THREE.OrthographicCamera(window.innerWidth / -20,
-        window.innerWidth / 20, window.innerHeight /20, 
-        window.innerHeight / -20, 1, 1000);
-    
-    camera2.position.x = 50;
-    camera2.position.y = h_tower/2;
-    camera2.position.z = 0;
-    camera2.lookAt(0, h_tower/2, 0);
-}
-
-function createCamera3() {
-    'use strict';
-    // OrthographicCamera(left, right, top, bottom, near, far)
-    camera3 = new THREE.OrthographicCamera(window.innerWidth / -20,
-        window.innerWidth / 20, window.innerHeight /20, 
-        window.innerHeight / -20, 1, 1000);
-    
-    camera3.position.x = 0;
-    camera3.position.y = 50;
-    camera3.position.z = 0;
-    camera3.lookAt(scene.position);
-}
-
-function createCamera4() {
-    'use strict';
-    // OrthographicCamera(left, right, top, bottom, near, far)
-    camera4 = new THREE.OrthographicCamera(window.innerWidth / -20,
-        window.innerWidth / 20, window.innerHeight /20, 
-        window.innerHeight / -20, 1, 1000);
-    
-    camera4.position.x = 50;
-    camera4.position.y = 50;
-    camera4.position.z = 50;
-    camera4.lookAt(0, 17, 0);
-}
-
-function createCamera5() {
+function createPerspectiveCamera(x, y, z) {
     'use strict';
     // PerspectiveCamera(fov, aspect, near, far)
-    camera5 = new THREE.PerspectiveCamera(70,
+    tempCamera = new THREE.PerspectiveCamera(70,
         window.innerWidth / window.innerHeight, 1, 1000);
-    
-    camera5.position.x = 50;
-    camera5.position.y = 50;
-    camera5.position.z = 50;
-    camera5.lookAt(scene.position);
-}
-
-function createCamera6(x, y, z) {
-    'use strict';
-    // PerspectiveCamera(fov, aspect, near, far)
-    camera6 = new THREE.PerspectiveCamera(70,
-        window.innerWidth / window.innerHeight, 1, 1000);
-    
-    // mobile camera
-    greatgrandson.add(camera6)
-    camera6.position.x = x;
-    camera6.position.y = y;
-    camera6.position.z = z;
-    camera6.rotation.x = -Math.PI/2
+    tempCamera.position.set(x, y, z);
+    return tempCamera;
 }
 
 /////////////////////
@@ -266,7 +205,6 @@ function createFather(x, y, z) {
 function addBase(obj, x, y, z) {
     'use strict';
     // BoxGeometry(width, height, length)
-
     geometry = new THREE.BoxGeometry(L_base, h_base, L_base);
     mesh = new THREE.Mesh(geometry, baseMaterial);
     mesh.position.set(x, y, z);
@@ -454,7 +392,9 @@ function createGreatGrandson(obj, x, y, z) {
     addClaw(greatgrandson, L_clawBody/2 + L_clawTip/2, -h_clawBody/3, L_clawBody/2 + L_clawTip/2, '2');
     addClaw(greatgrandson, L_clawBody/2 + L_clawTip/2, -h_clawBody/3, -L_clawBody/2 - L_clawTip/2, '3');
     addClaw(greatgrandson, -L_clawBody/2 - L_clawTip/2, -h_clawBody/3, -L_clawBody/2 - L_clawTip/2, '4');
-    createCamera6(0, - L_clawBody, 0);
+    camera6 = createPerspectiveCamera(0, -L_clawBody, 0);
+    greatgrandson.add(camera6)
+    camera6.rotation.x = -Math.PI/2;
 
     obj.add(greatgrandson);
 
@@ -541,6 +481,10 @@ function addContainerWall(obj, x, y, z, largura, altura, espessura) {
     obj.add(mesh);
 }
 
+function createCargos(x, y, z, cargoNum) {
+
+}
+
 function createDodecahedronCargo(x, y, z) {
     'use strict';
     geometry = new THREE.DodecahedronGeometry(3);
@@ -552,9 +496,9 @@ function createDodecahedronCargo(x, y, z) {
 function createIcosahedronCargo(x, y, z) {
     'use strict';
     geometry = new THREE.IcosahedronGeometry(3);
-    isocahedronCargoMesh = new THREE.Mesh(geometry, icosahedronCargoMaterial);
-    isocahedronCargoMesh.position.set(x, y, z);
-    scene.add(isocahedronCargoMesh);
+    icosahedronCargoMesh = new THREE.Mesh(geometry, icosahedronCargoMaterial);
+    icosahedronCargoMesh.position.set(x, y, z);
+    scene.add(icosahedronCargoMesh);
 }
 
 function createTorusCargo(x, y, z) {
@@ -576,7 +520,7 @@ function createCubeCargo(x, y, z) {
 function createTorusKnotCargo(x, y, z) {
     'use strict';
     geometry = new THREE.TorusKnotGeometry();
-    torusKnotCargoMesh = new THREE.Mesh(geometry, torusKnotMaterial);
+    torusKnotCargoMesh = new THREE.Mesh(geometry, torusKnotCargoMaterial);
     torusKnotCargoMesh.position.set(x, y, z);
     scene.add(torusKnotCargoMesh);
 }
@@ -596,37 +540,33 @@ function hasCollision(rA, rB, objA, lock) {
 
 function checkCollisions(){
     'use strict';
+
     // check collision with cube
     if (hasCollision(cubeRadius, greatGrandSonRadius, cubeCargoMesh, greatgrandson)) {
-        console.log("Detectou 1");
         animating = true;
         greatgrandson.attach(cubeCargoMesh);
         return cubeCargoMesh;
     }
     // check collision with dodecahedron
     if (hasCollision(dodecahedronRadius, greatGrandSonRadius, dodecahedronCargoMesh, greatgrandson)) {
-        console.log("Detectou 2");
         animating = true;
         greatgrandson.attach(dodecahedronCargoMesh);
         return dodecahedronCargoMesh;
     }
-    // check collision with isocahedron
-    if (hasCollision(isocahedronRadius, greatGrandSonRadius, isocahedronCargoMesh, greatgrandson)) {
-        console.log("Detectou 3");
+    // check collision with icosahedron
+    if (hasCollision(icosahedronRadius, greatGrandSonRadius, icosahedronCargoMesh, greatgrandson)) {
         animating = true;
-        greatgrandson.attach(isocahedronCargoMesh);
-        return isocahedronCargoMesh;
+        greatgrandson.attach(icosahedronCargoMesh);
+        return icosahedronCargoMesh;
     }
     // check collision with Torus
     if (hasCollision(torusRadius, greatGrandSonRadius, torusCargoMesh, greatgrandson)) {
-        console.log("Detectou 4");
         animating = true;
         greatgrandson.attach(torusCargoMesh);
         return torusCargoMesh;
     }
     // check collision with TorusKnot
     if (hasCollision(torusKnotRadius, greatGrandSonRadius, torusKnotCargoMesh, greatgrandson)) {
-        console.log("Detectou 5");
         animating = true;
         greatgrandson.attach(torusKnotCargoMesh);
         return torusKnotCargoMesh;
@@ -697,7 +637,7 @@ function handleCollisions(mesh, timeElapsed){
     }
 
     // part5 - claw going down
-    if (greatgrandson.userData.vertical_desloc > -20) {
+    if (greatgrandson.userData.vertical_desloc > -23) {
         greatgrandson.translateY(-(greatgrandson.userData.vertical_speed * timeElapsed));
         grandson.children.forEach (child => {
             if (child.name === "cabo") {
@@ -735,6 +675,7 @@ function handleCollisions(mesh, timeElapsed){
     mesh.parent.remove(mesh);
 
     part2 = false;
+    rotateNegative = false;
     animating = false;
 }
 
@@ -865,16 +806,21 @@ function init() {
     document.body.appendChild(renderer.domElement);
 
     createScene();
-    createCamera1();
-    createCamera2();
-    createCamera3();
-    createCamera4();
-    createCamera5();
+
+    camera1 = createOrthographicCamera(0, h_tower/2, 50);
+    camera1.lookAt(0, h_tower/2, 0);
+    camera2 = createOrthographicCamera(50, h_tower/2, 0);
+    camera2.lookAt(0, h_tower/2, 0);
+    camera3 = createOrthographicCamera(0, 50, 0);
+    camera3.lookAt(scene.position);
+    camera4 = createOrthographicCamera(50, 50, 50);
+    camera4.lookAt(0, 17, 0);
+    camera5 = createPerspectiveCamera(50, 50, 50);
+    camera5.lookAt(scene.position);
 
     currentCamera = camera4;
     views_keys['Fixed orthographic camera (4)'] = true;
     previousCamera = 'Fixed orthographic camera (4)';
-    //const controls = new OrbitControls(currentCamera, renderer.domElement);
 
     render();
 
@@ -969,7 +915,7 @@ function onKeyDown(e) {
                 trolleyMaterial,
                 counterWeightMaterial,
                 garraMaterial,
-                torusKnotMaterial,
+                torusKnotCargoMaterial,
                 cubeCargoMaterial
                 ];
         
@@ -1032,28 +978,6 @@ function onKeyUp(e){
     'use strict';
 
     switch(e.keyCode) {
-        // camera switching
-        case 49: // 1
-            //views_keys['Front camera (1)'] = false;
-            break;
-        case 50: // 2
-            //views_keys['Side camera (2)'] = false;
-            break;
-        case 51: // 3
-            //views_keys['Top camera (3)'] = false;
-            break;
-        case 52: // 4
-            //views_keys['Fixed orthographic camera (4)'] = false;
-            break;
-        case 53: // 5
-            //views_keys['Fixed perspective camera (5)'] = false;
-            break;
-        case 54: // 6
-            //views_keys['Mobile camera (6)'] = false;
-            break;
-        case 55:
-            //views_keys['Wireframe mode on/off (7)'] = false;
-            break;
         // superior section rotation
         case 81: // Q/q
             son.userData.positiveRotation = false;

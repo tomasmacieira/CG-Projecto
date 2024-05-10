@@ -23,7 +23,7 @@ var baseMaterial, cubeCargoMaterial, torusKnotMaterial;
 
 // Radii
 const greatGrandSonRadius = 1.5; 
-const cubeRadius = 4;
+const cubeRadius = 2;
 const isocahedronRadius = 3;
 const dodecahedronRadius = 3.5;
 const torusRadius = 4;
@@ -97,6 +97,10 @@ const movement_keys = {
     'Claws opening (R)' : false,
     'Claws closing (F)' : false,
 };
+
+// animation
+var animating = false;
+var part1 = false;
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -256,7 +260,7 @@ function createSon(obj, x, y, z) {
     'use strict';
 
     son = new THREE.Object3D();
-    son.userData = { positiveRotation: false, negativeRotation: false, speed: 0.8 } 
+    son.userData = { positiveRotation: false, negativeRotation: false, speed: Math.PI/4, crane_angle: 0 } 
 
     addRotationAxis(son, 0, 0, 0);
     addFrontJib(son, L_frontJib/2 - L_tower/2, h_frontJib, 0);
@@ -425,7 +429,8 @@ function createGreatGrandson(obj, x, y, z) {
                         claw_speed: 0.5,
                         claw_angle: 0,
                         maxAngleLimit: Math.PI/1.3,
-                        minAngleLimit: -Math.PI/4}
+                        minAngleLimit: -Math.PI/4,
+                        }
 
     addHook(greatgrandson, 0, 0, 0);
     addClaw(greatgrandson, -L_clawBody/2 - L_clawTip/2, -h_clawBody/3, L_clawBody/2 + L_clawTip/2, '1');
@@ -557,13 +562,11 @@ function createTorusCargo(x, y, z) {
 function createCubeCargo(x, y, z) {
     'use strict';
 
-    //cubeCargo = new THREE.Object3D();
     cubeCargoMaterial = new THREE.MeshBasicMaterial({color: 0xE77828, wireframe: true});
 
-    geometry = new THREE.BoxGeometry(5, 5, 5);
+    geometry = new THREE.BoxGeometry(3, 3, 3);
     cubeCargoMesh = new THREE.Mesh(geometry, cubeCargoMaterial);
     cubeCargoMesh.position.set(x, y, z);
-    //cubeCargo.add(mesh);
     scene.add(cubeCargoMesh);
 }
 
@@ -596,22 +599,29 @@ function checkCollisions(){
     // check collision with cube
     if (hasCollision(cubeRadius, greatGrandSonRadius, cubeCargoMesh, greatgrandson)) {
         console.log("Detectou 1");
+        animating = true;
+        greatgrandson.attach(cubeCargoMesh);
+        console.log(greatgrandson.userData.vertical_desloc);
     }
     // check collision with dodecahedron
     if (hasCollision(dodecahedronRadius, greatGrandSonRadius, dodecahedronCargoMesh, greatgrandson)) {
         console.log("Detectou 2");
+        animating = true;
     }
     // check collision with isocahedron
     if (hasCollision(isocahedronRadius, greatGrandSonRadius, isocahedronCargoMesh, greatgrandson)) {
         console.log("Detectou 3");
+        animating = true;
     }
     // check collision with Torus
     if (hasCollision(torusRadius, greatGrandSonRadius, torusCargoMesh, greatgrandson)) {
         console.log("Detectou 4");
+        animating = true;
     }
     // check collision with TorusKnot
     if (hasCollision(torusKnotRadius, greatGrandSonRadius, torusKnotCargoMesh, greatgrandson)) {
         console.log("Detectou 5");
+        animating = true;
     }
 
 }
@@ -619,8 +629,48 @@ function checkCollisions(){
 ///////////////////////
 /* HANDLE COLLISIONS */
 ///////////////////////
-function handleCollisions(){
+function handleCollisions(timeElapsed){
     'use strict';
+
+    // gancho down -21.585
+
+    // Cable going upwards
+    if (!part1 && greatgrandson.userData.vertical_desloc < -5) {
+        greatgrandson.translateY(greatgrandson.userData.vertical_speed * timeElapsed);
+        grandson.children.forEach (child => {
+            if (child.name === "cabo") {
+                console.log("asdasd");
+                child.scale.y -= (greatgrandson.userData.vertical_speed * timeElapsed)/child.geometry.parameters.height;
+                child.translateY((greatgrandson.userData.vertical_speed * timeElapsed)/2);
+            }
+        });
+        greatgrandson.userData.vertical_desloc += (greatgrandson.userData.vertical_speed * timeElapsed);
+        return;
+    }
+    part1 = true;
+
+    if (son.userData.crane_angle > -0.40) {
+        son.rotateY(-(son.userData.speed * timeElapsed));
+        son.userData.crane_angle -= (son.userData.speed * timeElapsed);
+        return;
+    }
+
+    // -0,2 carro para fora
+
+    // Cable going downwards
+    if (greatgrandson.userData.vertical_desloc > -18.5) {
+        greatgrandson.translateY(-(greatgrandson.userData.vertical_speed * timeElapsed));
+        grandson.children.forEach (child => {
+            if (child.name === "cabo") {
+                child.scale.y += (greatgrandson.userData.vertical_speed * timeElapsed)/child.geometry.parameters.height;
+                child.translateY(-((greatgrandson.userData.vertical_speed * timeElapsed)/2));
+            }
+        });
+        greatgrandson.userData.vertical_desloc -= greatgrandson.userData.vertical_speed * timeElapsed;
+        return;
+    }
+
+    animating = false;
 }
 
 ////////////
@@ -634,21 +684,25 @@ function update(){
     // Top section rotation
     if (son.userData.positiveRotation) {
         son.rotateY(son.userData.speed * timeElapsed);
+        son.userData.crane_angle += (son.userData.speed * timeElapsed);
     }
 
     if (son.userData.negativeRotation) {
         son.rotateY(-(son.userData.speed * timeElapsed));
+        son.userData.crane_angle -= (son.userData.speed * timeElapsed);
     }
     
     // Car movement
     if (grandson.userData.movingOut && (grandson.userData.horizontal_desloc < grandson.userData.maxCarTranslationLimit)) {
         grandson.translateX(grandson.userData.horizontal_speed * timeElapsed);
         grandson.userData.horizontal_desloc += (grandson.userData.horizontal_speed * timeElapsed);
+        console.log(grandson.userData.horizontal_desloc)
     }
 
     if (grandson.userData.movingIn && (grandson.userData.horizontal_desloc > grandson.userData.minCarTranslationLimit)) {
         grandson.translateX(-(grandson.userData.horizontal_speed * timeElapsed));
         grandson.userData.horizontal_desloc -= (grandson.userData.horizontal_speed * timeElapsed);
+        console.log(grandson.userData.horizontal_desloc)
     }
     
     // Cable going upwards
@@ -721,7 +775,12 @@ function update(){
 
     updateViewKeys();
     updateMovementKeys();
-    checkCollisions();
+    if (!animating) {
+        checkCollisions();
+    }
+    if (animating) {
+        handleCollisions(timeElapsed);
+    }
 }
 
 /////////////
@@ -849,37 +908,45 @@ function onKeyDown(e) {
             break;
         // superior section rotation
         case 81: // Q/q
+            if (animating) break;
             son.userData.positiveRotation = true;
             movement_keys['Positive rotation (Q)'] = true;
             break;
         case 65: // A/a
+            if (animating) break;
             son.userData.negativeRotation = true;
             movement_keys['Negative rotation (A)'] = true;
             break;
         // car movement
         case 87: // W/w
+            if (animating) break;
             grandson.userData.movingOut = true;
             movement_keys['Outwards trolley movement (W)'] = true;
             break;
         case 83: // S/s
+            if (animating) break;
             grandson.userData.movingIn = true;
             movement_keys['Inwards trolley movement (S)'] = true;
             break;
         // claw's vertical movement
         case 69: // E/e
+            if (animating) break;
             greatgrandson.userData.cableGoingUp = true;
             movement_keys['Upwards cable movement (E)'] = true;
             break;
         case 68: // D/d
+            if (animating) break;
             greatgrandson.userData.cableGoingDown = true;
             movement_keys['Downwards cable movement (D)'] = true;
             break;
         //claw's opening/closing movement
         case 82: // R/r
+            if (animating) break;
             greatgrandson.userData.openClaw = true;
             movement_keys['Claws opening (R)'] = true;
             break;
         case 70: // F/f
+            if (animating) break;
             greatgrandson.userData.closeClaw = true;
             movement_keys['Claws closing (F)'] = true;
             break;
@@ -930,7 +997,6 @@ function onKeyUp(e){
             movement_keys['Outwards trolley movement (W)'] = false;
             break;
         case 83: // S/s
-        case 115: // s
             grandson.userData.movingIn = false;
             movement_keys['Inwards trolley movement (S)'] = false;
             break;

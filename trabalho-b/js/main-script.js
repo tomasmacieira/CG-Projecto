@@ -8,24 +8,24 @@ import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 /* GLOBAL VARIABLES */
 //////////////////////
 
-// cameras, scene, renderer and clock
+// Cameras, scene, renderer and clock
 var camera1, camera2, camera3, camera4, camera5, camera6, currentCamera, tempCamera, previousCamera;
 var scene, renderer, clock;
 
-// Cargos
-var cubeCargoMesh, dodecahedronCargoMesh, icosahedronCargoMesh, torusCargoMesh, torusKnotCargoMesh;
+// Meshes
+var mesh, cubeCargoMesh, dodecahedronCargoMesh, icosahedronCargoMesh, torusCargoMesh, torusKnotCargoMesh;
 
-// meshes & materials
-var geometry, mesh;
+// Materials
+var geometry;
 var cubeCargoMaterial,  icosahedronCargoMaterial, torusCargoMaterial, torusKnotCargoMaterial, dodecahedronCargoMaterial;
 var containerBaseMaterial, containerMaterial;
-var axisMaterial, cabinMaterial, cableMaterial;
-var counterWeightMaterial, trolleyMaterial, garraMaterial;
-var baseMaterial;
+var metalMaterial, concreteMaterial, cableMaterial, cabinMaterial, trolleyMaterial, clawMaterial;
+var containerBaseMaterial, containerMaterial;
 
-var metalMaterial;
+// Object3Ds
+var father, son, grandson, greatgrandson;
 
-// Radii
+// Radii (for collision detection)
 const greatGrandSonRadius = 1.5; 
 const cubeRadius = 2;
 const icosahedronRadius = 3;
@@ -34,7 +34,7 @@ const torusRadius = 4;
 const torusKnotRadius = 2;
 
 // Measurements
-// L: width, h: height
+// L: width, h: height, c: length
 
 const L_base = 9;
 const h_base = 3;
@@ -54,13 +54,14 @@ const h_towerPeak = 6;
 
 const L_counterWeight = 4.5;
 const h_counterWeight = 1.5;
-const c_counterWeight = 3;
+const c_counterWeight = 2;
 
 const L_trolley = 3;
 const h_trolley = 1.5;
 
 const L_container = 20;
-const h_container = 8;
+const h_container = 6;
+const c_container = 8;
 
 const c_frontCable = 35;
 const c_counterCable = 12.1;
@@ -77,8 +78,10 @@ const h_clawBody = 0.75;
 const L_clawTip = 0.5;
 const h_clawTip = 0.5;
 
-// object3Ds
-var father, son, grandson, greatgrandson;
+// Other vars (used for the animation)
+var animating = false;
+var part2 = false;
+var rotateNegative = false;
 
 // HUD
 const views_keys = {
@@ -102,33 +105,26 @@ const movement_keys = {
     'Claws closing (F)' : false,
 };
 
-// animation
-var animating = false;
-var part2 = false;
-var rotateNegative = false;
-
 /////////////////////
 /* CREATE SCENE(S) */
 /////////////////////
 function createScene(){
     'use strict';
 
+    // define the background and add a floor to the scene
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xb8cef2);
-
-    // add a floor to the scene
-    let floorMaterial = new THREE.MeshBasicMaterial( {color: 0x999999, side: THREE.DoubleSide} );
-    let floorGeometry = new THREE.BoxGeometry(100, 100, 2);
-    let floor = new THREE.Mesh(floorGeometry, floorMaterial);
-    scene.add(floor);
+    let floor = new THREE.Mesh(new THREE.BoxGeometry(100, 100, 2), new THREE.MeshBasicMaterial({color: 0x999999, side: THREE.DoubleSide}));
     floor.rotateX(-Math.PI/2);
     floor.position.y = -1;
+    scene.add(floor);
 
     createMaterials();
 
     createFather(0, h_base/2, 0);
 
     createContainer(25, 0, 10);
+
     createDodecahedronCargo(-20, 2.7, -10);
     createIcosahedronCargo(10, 2.5, -17);
     createTorusCargo(-25, 2.7, 15);
@@ -138,13 +134,11 @@ function createScene(){
 
 function createMaterials() {
     metalMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: true });
-
+    concreteMaterial = new THREE.MeshBasicMaterial({ color: 0x5B5655, wireframe: true });  
     cableMaterial = new THREE.MeshBasicMaterial({ color: 0x322C2B, wireframe: true });
-    cabinMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: true });
-    baseMaterial = new THREE.MeshBasicMaterial({ color: 0x322C2B, wireframe: true });    
-    axisMaterial = new THREE.MeshBasicMaterial({ color: 0xFEEFAD, wireframe: true });
-    counterWeightMaterial = new THREE.MeshBasicMaterial({ color: 0xF6E9B2, wireframe: true });
-    trolleyMaterial = new THREE.MeshBasicMaterial({ color: 0xFEEFAD, wireframe: true });
+    cabinMaterial = new THREE.MeshBasicMaterial({ color: 0xEBEBE9, wireframe: true });
+    trolleyMaterial = new THREE.MeshBasicMaterial({ color: 0xFDB336, wireframe: true });    
+    clawMaterial = new THREE.MeshBasicMaterial({ color: 0x322C2B, wireframe: true });
 
     torusKnotCargoMaterial = new THREE.MeshBasicMaterial({color: 0xF06292, wireframe: true});
     cubeCargoMaterial = new THREE.MeshBasicMaterial({color: 0xE77828, wireframe: true});
@@ -152,8 +146,8 @@ function createMaterials() {
     dodecahedronCargoMaterial = new THREE.MeshBasicMaterial({ color: 0x45c58a, wireframe: true});
     icosahedronCargoMaterial = new THREE.MeshBasicMaterial({color: 0xcc4d97, wireframe: true});
 
-    containerMaterial = new THREE.MeshBasicMaterial({ color: 0xE72929, wireframe: true});
-    containerBaseMaterial = new THREE.MeshBasicMaterial({ color: 0xC40C0C, wireframe: true});
+    containerMaterial = new THREE.MeshBasicMaterial({ color: 0xB53A31, wireframe: true});
+    containerBaseMaterial = new THREE.MeshBasicMaterial({ color: 0x6A0300, wireframe: true});
 }
 
 //////////////////////
@@ -190,34 +184,13 @@ function createFather(x, y, z) {
 
     father = new THREE.Object3D();
 
-    addBase(father, 0, 0, 0);
-    addTower(father, 0, h_tower/2 + h_base/2, 0);
+    addBoxGeometry(father, 0, 0, 0, L_base, h_base, L_base, concreteMaterial); // base
+    addBoxGeometry(father, 0, h_tower/2 + h_base/2, 0, L_tower, h_tower, L_tower, metalMaterial); // tower
 
     scene.add(father);
-
-    father.position.x = x;
-    father.position.y = y;
-    father.position.z = z;
+    father.position.set(x, y, z);
 
     createSon(father, 0, h_tower + h_base - h_axis, 0);
-}
-
-function addBase(obj, x, y, z) {
-    'use strict';
-    // BoxGeometry(width, height, length)
-    geometry = new THREE.BoxGeometry(L_base, h_base, L_base);
-    mesh = new THREE.Mesh(geometry, baseMaterial);
-    mesh.position.set(x, y, z);
-    obj.add(mesh);
-}
-
-function addTower(obj, x, y, z) {
-    'use strict';
-    // BoxGeometry(width, height, length)
-    geometry = new THREE.BoxGeometry(L_tower, h_tower, L_tower);
-    mesh = new THREE.Mesh(geometry, metalMaterial);
-    mesh.position.set(x, y, z);
-    obj.add(mesh);
 }
 
 function createSon(obj, x, y, z) {
@@ -227,13 +200,13 @@ function createSon(obj, x, y, z) {
     son.userData = { positiveRotation: false, negativeRotation: false, speed: Math.PI/4, crane_angle: 0 } 
 
     addRotationAxis(son, 0, 0, 0);
-    addFrontJib(son, L_frontJib/2 - L_tower/2, h_frontJib - h_axis, 0);
-    addCounterJib(son, -L_tower*2, h_counterJib - h_axis, 0);
+    addBoxGeometry(son, L_frontJib/2 - L_tower/2, h_frontJib - h_axis, 0, L_frontJib, h_frontJib, h_frontJib, metalMaterial); // front jib
+    addBoxGeometry(son, -L_tower*2, h_counterJib - h_axis, 0, L_counterJib, h_counterJib, h_counterJib, metalMaterial); // counter jib
     addTowerPeak(son, 0, h_towerPeak - h_axis * 2, 0);
-    addCounterWeight(son, -L_tower*(5/2), h_counterWeight/2 - h_axis, 0);
-    addCabin(son, L_tower, -h_axis, 0);
-    addJibCable(son, c_frontCable / 2 - 0.25, h_towerPeak + h_frontJib / 2 - 0.2 - h_axis, 0, c_frontCable, 0);
-    addJibCable(son, - c_counterCable / 2 + 0.8, h_towerPeak + h_frontJib / 2 - 0.2 - h_axis, 0, c_counterCable, 1);
+    addBoxGeometry(son, -L_tower*(5/2), h_counterWeight/2 - h_axis, 0, L_counterWeight, h_counterWeight, c_counterWeight, concreteMaterial); // counterweight
+    addBoxGeometry(son, L_tower, -h_axis, 0, L_tower, L_tower, L_tower, cabinMaterial); // cabin
+    addJibCable(son, c_frontCable/2 - 0.25, h_towerPeak + h_frontJib/2 - 0.2 - h_axis, 0, c_frontCable, 0);
+    addJibCable(son, - c_counterCable/2 + 0.8, h_towerPeak + h_frontJib/2 - 0.2 - h_axis, 0, c_counterCable, 1);
 
     obj.add(son);
 
@@ -244,51 +217,11 @@ function createSon(obj, x, y, z) {
     createGrandson(son, initial_delta1, h_axis - h_trolley + 0.3, 0);
 }
 
-function addCabin(obj, x, y, z) {
-    'use string';
-
-    geometry = new THREE.BoxGeometry(L_tower, 3, L_tower);
-    mesh = new THREE.Mesh(geometry, cabinMaterial);
-    mesh.position.set(x, y, z);
-    obj.add(mesh);
-}
-
-function addJibCable(obj, x, y, z, c_tirante, direction) {
-    'use strict';
-
-    geometry = new THREE.CylinderGeometry(0.1,0.1, c_tirante);
-    mesh = new THREE.Mesh(geometry, cableMaterial);
-    mesh.position.set(x, y, z);
-    var angle = ((Math.PI/2) - Math.asin(h_towerPeak / c_tirante));
-    mesh.rotation.z = angle; // Rotate around the Z axis 
-
-    mesh.rotation.y = Math.PI * direction; // Direction will either be 0 or 1 i.e either rotates (y) or doesnt
-    obj.add(mesh);
-}
-
 function addRotationAxis(obj, x, y, z) {
     'use strict';
     // CylinderGeometry(radiusTop, radiusBottom, height, heightSegments)
     geometry = new THREE.CylinderGeometry(L_tower/2 - 0.2, L_tower/2 - 0.2, h_axis, 16);
-    mesh = new THREE.Mesh(geometry, axisMaterial);
-    mesh.position.set(x, y, z);
-    obj.add(mesh);
-}
-
-function addFrontJib(obj, x, y, z) {
-    'use strict';
-    // BoxGeometry(width, height, length)
-    geometry = new THREE.BoxGeometry(L_frontJib, h_frontJib, h_frontJib);
-    mesh = new THREE.Mesh(geometry, metalMaterial);
-    mesh.position.set(x, y, z);
-    obj.add(mesh);
-}
-
-function addCounterJib(obj, x, y, z) {
-    'use strict';
-    // BoxGeometry(width, height, length)
-    geometry = new THREE.BoxGeometry(L_counterJib, h_counterJib, h_counterJib);
-    mesh = new THREE.Mesh(geometry, metalMaterial);
+    mesh = new THREE.Mesh(geometry, clawMaterial);
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -320,12 +253,16 @@ function addTowerPeak(obj, x, y, z) {
     obj.add(mesh);
 }
 
-function addCounterWeight(obj, x, y, z) {
+function addJibCable(obj, x, y, z, c_tirante, direction) {
     'use strict';
-    // BoxGeometry(width, height, length)
-    geometry = new THREE.BoxGeometry(L_counterWeight, h_counterWeight, c_counterWeight - 1);
-    mesh = new THREE.Mesh(geometry, counterWeightMaterial);
+
+    geometry = new THREE.CylinderGeometry(0.1,0.1, c_tirante);
+    mesh = new THREE.Mesh(geometry, cableMaterial);
     mesh.position.set(x, y, z);
+    var angle = ((Math.PI/2) - Math.asin(h_towerPeak / c_tirante));
+    mesh.rotation.z = angle; // Rotate around the Z axis 
+
+    mesh.rotation.y = Math.PI * direction; // Direction will either be 0 or 1 i.e either rotates (y) or doesnt
     obj.add(mesh);
 }
 
@@ -339,7 +276,7 @@ function createGrandson(obj, x, y, z) {
                         horizontal_speed: 5,
                         horizontal_desloc: 0}
 
-    addTrolley(grandson, 0, 0, 0);
+    addBoxGeometry(grandson, 0, 0, 0, L_trolley, h_trolley, h_frontJib, trolleyMaterial); // trolley
     addTrolleyCable(grandson, 0, -initial_delta2/2, 0);
 
     obj.add(grandson);
@@ -351,23 +288,13 @@ function createGrandson(obj, x, y, z) {
     createGreatGrandson(grandson, 0, -initial_delta2, 0);
 }
 
-function addTrolley(obj, x, y, z) {
-    'use strict';
-    // BoxGeometry(width, height, length)
-    geometry = new THREE.BoxGeometry(L_trolley, h_trolley, h_frontJib);
-    mesh = new THREE.Mesh(geometry, trolleyMaterial);
-    mesh.position.set(x, y, z);
-    mesh.name = "trolley";
-    obj.add(mesh);
-}
-
 function addTrolleyCable(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.CylinderGeometry(trolleyCableRadius, trolleyCableRadius, initial_delta2);
     mesh = new THREE.Mesh(geometry, cableMaterial);
     mesh.position.set(x, y, z);
-    mesh.name = "cabo";
+    mesh.name = "cable";
     obj.add(mesh);
 }
 
@@ -387,11 +314,11 @@ function createGreatGrandson(obj, x, y, z) {
                         minAngleLimit: -Math.PI/4,
                         }
 
-    addHook(greatgrandson, 0, 0, 0);
-    addClaw(greatgrandson, -L_clawBody/2 - L_clawTip/2, -h_clawBody/3, L_clawBody/2 + L_clawTip/2, '1');
-    addClaw(greatgrandson, L_clawBody/2 + L_clawTip/2, -h_clawBody/3, L_clawBody/2 + L_clawTip/2, '2');
-    addClaw(greatgrandson, L_clawBody/2 + L_clawTip/2, -h_clawBody/3, -L_clawBody/2 - L_clawTip/2, '3');
-    addClaw(greatgrandson, -L_clawBody/2 - L_clawTip/2, -h_clawBody/3, -L_clawBody/2 - L_clawTip/2, '4');
+    addClaw(greatgrandson, 0, 0, 0);
+    addClawFinger(greatgrandson, -L_clawBody/2 - L_clawTip/2, -h_clawBody/3, L_clawBody/2 + L_clawTip/2, '1');
+    addClawFinger(greatgrandson, L_clawBody/2 + L_clawTip/2, -h_clawBody/3, L_clawBody/2 + L_clawTip/2, '2');
+    addClawFinger(greatgrandson, L_clawBody/2 + L_clawTip/2, -h_clawBody/3, -L_clawBody/2 - L_clawTip/2, '3');
+    addClawFinger(greatgrandson, -L_clawBody/2 - L_clawTip/2, -h_clawBody/3, -L_clawBody/2 - L_clawTip/2, '4');
     camera6 = createPerspectiveCamera(0, -L_clawBody, 0);
     greatgrandson.add(camera6)
     camera6.rotation.x = -Math.PI/2;
@@ -403,23 +330,22 @@ function createGreatGrandson(obj, x, y, z) {
     greatgrandson.position.z = z;
 }
 
-function addHook(obj, x, y, z) {
+function addClaw(obj, x, y, z) {
     'use strict';
     geometry = new THREE.CylinderGeometry(hookRadius, hookRadius, h_hook, 20);
-    garraMaterial = new THREE.MeshBasicMaterial({ color: 0x322C2B, wireframe: true });
-    mesh = new THREE.Mesh(geometry, garraMaterial);
+    mesh = new THREE.Mesh(geometry, clawMaterial);
     mesh.position.set(x, y, z);
     mesh.name = "garra";
     obj.add(mesh);
 }
 
-function addClaw(obj, x, y, z, number) {
+function addClawFinger(obj, x, y, z, number) {
     'use strict';
     
     var dedo = new THREE.Group();
     // dedo é composto por body(articulação) e tip(ponta)
     var geometry_body = new THREE.BoxGeometry(L_clawBody, h_clawBody, L_clawBody);
-    var mesh_body = new THREE.Mesh(geometry_body, garraMaterial);
+    var mesh_body = new THREE.Mesh(geometry_body, clawMaterial);
     mesh_body.position.set(x, y, z);
 
     var geometry_tip = new THREE.BufferGeometry();
@@ -458,31 +384,20 @@ function createContainer(x, y, z) {
     var container = new THREE.Object3D();
     scene.add(container);
 
-    addContainerBase(container, x, y, z);
-    addContainerWall(container, x, y + h_container / 2, z - h_container / 2, L_container, h_container, 0.3); // PAREDE DIREITA
-    addContainerWall(container, x, y + h_container / 2, z + h_container / 2, L_container, h_container, 0.3); // PAREDE ESQUERDA
-    addContainerWall(container, x + L_container / 2, y + h_container / 2, z, 0.3, h_container, h_container);
-    addContainerWall(container, x - L_container / 2, y + h_container / 2, z, 0.3, h_container, h_container);
+    addBoxGeometry(container, x, y + 0.1, z, L_container, 0.3, c_container, containerBaseMaterial); // container base
+    addBoxGeometry(container, x, y + h_container/2, z - c_container/2, L_container, h_container, 0.3, containerMaterial); // wall 1
+    addBoxGeometry(container, x, y + h_container/2, z + c_container/2, L_container, h_container, 0.3, containerMaterial); // wall 2
+    addBoxGeometry(container, x + L_container/2, y + h_container/2, z, 0.3, h_container, c_container, containerMaterial); // wall 3
+    addBoxGeometry(container, x - L_container/2, y + h_container/2, z, 0.3, h_container, c_container, containerMaterial); // wall 4
 }
 
-function addContainerBase(obj, x, y, z) {
+function addBoxGeometry(obj, x, y, z, L, h, c, mat) {
     'use strict';
-    geometry = new THREE.BoxGeometry(L_container, 0.3, h_container);
-    mesh = new THREE.Mesh(geometry, containerBaseMaterial);
-    mesh.position.set(x, y + 0.1, z);
+    // BoxGeometry(width, height, length)
+    geometry = new THREE.BoxGeometry(L, h, c);
+    mesh = new THREE.Mesh(geometry, mat);
+    mesh.position.set(x, y, z);
     obj.add(mesh);
-}
-
-function addContainerWall(obj, x, y, z, largura, altura, espessura) {
-    'use strict';
-    geometry = new THREE.BoxGeometry(largura, altura - 2, espessura);
-    mesh = new THREE.Mesh(geometry, containerMaterial);
-    mesh.position.set(x, y - 1, z);
-    obj.add(mesh);
-}
-
-function createCargos(x, y, z, cargoNum) {
-
 }
 
 function createDodecahedronCargo(x, y, z) {
@@ -582,22 +497,23 @@ function handleCollisions(mesh, timeElapsed){
 
     // part1 - claw closing
     if (!part2 && greatgrandson.userData.claw_angle < greatgrandson.userData.maxAngleLimit) {
+        let inc = greatgrandson.userData.claw_speed * timeElapsed;
         greatgrandson.children.forEach (child => {
             if (child.name === '1') {
-                child.rotateOnAxis(new THREE.Vector3(-1, 0, -1),  -(greatgrandson.userData.claw_speed * timeElapsed));
-                greatgrandson.userData.claw_angle += (greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, -1), -inc);
+                greatgrandson.userData.claw_angle += inc;
             }
             if (child.name === '2') {
-                child.rotateOnAxis(new THREE.Vector3(1, 0, -1),  greatgrandson.userData.claw_speed * timeElapsed);
-                greatgrandson.userData.claw_angle += (greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(1, 0, -1), inc);
+                greatgrandson.userData.claw_angle += inc;
             }
             if (child.name === '3') {
-                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), -(greatgrandson.userData.claw_speed * timeElapsed));
-                greatgrandson.userData.claw_angle += (greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), -inc);
+                greatgrandson.userData.claw_angle += inc;
             }
             if (child.name === '4') {
-                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), greatgrandson.userData.claw_speed * timeElapsed);
-                greatgrandson.userData.claw_angle += (greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), inc);
+                greatgrandson.userData.claw_angle += inc;
             }
         })
         return;
@@ -605,68 +521,74 @@ function handleCollisions(mesh, timeElapsed){
 
     // part2 - claw going up
     if (!part2 && greatgrandson.userData.vertical_desloc < -5) {
-        greatgrandson.translateY(greatgrandson.userData.vertical_speed * timeElapsed);
+        let inc = greatgrandson.userData.vertical_speed * timeElapsed
+        greatgrandson.translateY(inc);
         grandson.children.forEach (child => {
-            if (child.name === "cabo") {
-                child.scale.y -= (greatgrandson.userData.vertical_speed * timeElapsed)/child.geometry.parameters.height;
-                child.translateY((greatgrandson.userData.vertical_speed * timeElapsed)/2);
+            if (child.name === "cable") {
+                child.scale.y -= inc/child.geometry.parameters.height;
+                child.translateY(inc/2);
             }
         });
-        greatgrandson.userData.vertical_desloc += (greatgrandson.userData.vertical_speed * timeElapsed);
+        greatgrandson.userData.vertical_desloc += inc;
         return;
     }
     part2 = true;
 
     // part3 - crane rotating
     if (!rotateNegative && son.userData.crane_angle > -0.40) {
-        son.rotateY(-(son.userData.speed * timeElapsed));
-        son.userData.crane_angle -= (son.userData.speed * timeElapsed);
+        let inc = son.userData.speed * timeElapsed;
+        son.rotateY(-inc);
+        son.userData.crane_angle -= inc;
         return;
     } else if (son.userData.crane_angle < -0.40) {
-        son.rotateY((son.userData.speed * timeElapsed));
-        son.userData.crane_angle += (son.userData.speed * timeElapsed);
+        let inc = son.userData.speed * timeElapsed;
+        son.rotateY(inc);
+        son.userData.crane_angle += inc;
         rotateNegative = true;
         return;
     }
 
     // part4 - car moving
     if (grandson.userData.horizontal_desloc < -0.2) {
-        grandson.translateX(grandson.userData.horizontal_speed * timeElapsed);
-        grandson.userData.horizontal_desloc += (grandson.userData.horizontal_speed * timeElapsed);
+        let inc = grandson.userData.horizontal_speed * timeElapsed;
+        grandson.translateX(inc);
+        grandson.userData.horizontal_desloc += inc;
         return;
     }
 
     // part5 - claw going down
     if (greatgrandson.userData.vertical_desloc > -23) {
-        greatgrandson.translateY(-(greatgrandson.userData.vertical_speed * timeElapsed));
+        let inc = greatgrandson.userData.vertical_speed * timeElapsed;
+        greatgrandson.translateY(-inc);
         grandson.children.forEach (child => {
-            if (child.name === "cabo") {
-                child.scale.y += (greatgrandson.userData.vertical_speed * timeElapsed)/child.geometry.parameters.height;
-                child.translateY(-((greatgrandson.userData.vertical_speed * timeElapsed)/2));
+            if (child.name === "cable") {
+                child.scale.y += inc/child.geometry.parameters.height;
+                child.translateY(-inc/2);
             }
         });
-        greatgrandson.userData.vertical_desloc -= greatgrandson.userData.vertical_speed * timeElapsed;
+        greatgrandson.userData.vertical_desloc -= inc;
         return;
     }
     
     // part6 - claw opening
     if (greatgrandson.userData.claw_angle > 0) {
+        let inc = greatgrandson.userData.claw_speed * timeElapsed;
         greatgrandson.children.forEach (child => {
             if (child.name === '1') {
-                child.rotateOnAxis(new THREE.Vector3(-1, 0, -1), greatgrandson.userData.claw_speed * timeElapsed);
-                greatgrandson.userData.claw_angle -= (greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, -1), inc);
+                greatgrandson.userData.claw_angle -= inc;
             }
             if (child.name === '2') {
-                child.rotateOnAxis(new THREE.Vector3(1, 0, -1), -(greatgrandson.userData.claw_speed * timeElapsed));
-                greatgrandson.userData.claw_angle -= (greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(1, 0, -1), -inc);
+                greatgrandson.userData.claw_angle -= inc;
             }
             if (child.name === '3') {
-                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), greatgrandson.userData.claw_speed * timeElapsed);
-                greatgrandson.userData.claw_angle -= (greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), inc);
+                greatgrandson.userData.claw_angle -= inc;
             }
             if (child.name === '4') {
-                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), -(greatgrandson.userData.claw_speed * timeElapsed));
-                greatgrandson.userData.claw_angle -= (greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), -inc);
+                greatgrandson.userData.claw_angle -= inc;
             }
         })
         return;
@@ -689,96 +611,105 @@ function update(){
 
     // Top section rotation
     if (son.userData.positiveRotation) {
-        son.rotateY(son.userData.speed * timeElapsed);
-        son.userData.crane_angle += (son.userData.speed * timeElapsed);
+        let inc = son.userData.speed * timeElapsed;
+        son.rotateY(inc);
+        son.userData.crane_angle += inc;
     }
 
     if (son.userData.negativeRotation) {
-        son.rotateY(-(son.userData.speed * timeElapsed));
-        son.userData.crane_angle -= (son.userData.speed * timeElapsed);
+        let inc = son.userData.speed * timeElapsed;
+        son.rotateY(-inc);
+        son.userData.crane_angle -= inc;
     }
     
     // Car movement
     if (grandson.userData.movingOut && (grandson.userData.horizontal_desloc < grandson.userData.maxCarTranslationLimit)) {
-        grandson.translateX(grandson.userData.horizontal_speed * timeElapsed);
-        grandson.userData.horizontal_desloc += (grandson.userData.horizontal_speed * timeElapsed);
+        let inc = grandson.userData.horizontal_speed * timeElapsed;
+        grandson.translateX(inc);
+        grandson.userData.horizontal_desloc += inc;
     }
 
     if (grandson.userData.movingIn && (grandson.userData.horizontal_desloc > grandson.userData.minCarTranslationLimit)) {
-        grandson.translateX(-(grandson.userData.horizontal_speed * timeElapsed));
-        grandson.userData.horizontal_desloc -= (grandson.userData.horizontal_speed * timeElapsed);
+        let inc = grandson.userData.horizontal_speed * timeElapsed;
+        grandson.translateX(-inc);
+        grandson.userData.horizontal_desloc -= inc;
     }
     
     // Cable going upwards
     if (greatgrandson.userData.cableGoingUp && (greatgrandson.userData.vertical_desloc < greatgrandson.userData.maxCableTranslationLimit)) {
-            greatgrandson.translateY(greatgrandson.userData.vertical_speed * timeElapsed);
-            grandson.children.forEach (child => {
-                if (child.name === "cabo") {
-                    child.scale.y -= (greatgrandson.userData.vertical_speed * timeElapsed)/child.geometry.parameters.height;
-                    child.translateY((greatgrandson.userData.vertical_speed * timeElapsed)/2);
-                }
-            });
-            greatgrandson.userData.vertical_desloc += greatgrandson.userData.vertical_speed * timeElapsed;
+        let inc = greatgrandson.userData.vertical_speed * timeElapsed;
+        greatgrandson.translateY(inc);
+        grandson.children.forEach (child => {
+            if (child.name === "cable") {
+                child.scale.y -= inc/child.geometry.parameters.height;
+                child.translateY(inc/2);
+            }
+        });
+        greatgrandson.userData.vertical_desloc += inc;
     }
 
     // Cable going downwards
     if (greatgrandson.userData.cableGoingDown && (greatgrandson.userData.vertical_desloc > greatgrandson.userData.minCableTranslationLimit)) {
-            greatgrandson.translateY(-(greatgrandson.userData.vertical_speed * timeElapsed));
-            grandson.children.forEach (child => {
-                if (child.name === "cabo") {
-                    child.scale.y += (greatgrandson.userData.vertical_speed * timeElapsed)/child.geometry.parameters.height;
-                    child.translateY(-((greatgrandson.userData.vertical_speed * timeElapsed)/2));
-                }
-            });
-            greatgrandson.userData.vertical_desloc -= greatgrandson.userData.vertical_speed * timeElapsed;
+        let inc = greatgrandson.userData.vertical_speed * timeElapsed;
+        greatgrandson.translateY(-inc);
+        grandson.children.forEach (child => {
+            if (child.name === "cable") {
+                child.scale.y += inc/child.geometry.parameters.height;
+                child.translateY(-inc/2);
+            }
+        });
+        greatgrandson.userData.vertical_desloc -= inc;
     }
 
     // Claw closing
     if (greatgrandson.userData.closeClaw && (greatgrandson.userData.claw_angle < greatgrandson.userData.maxAngleLimit)) {
+        let inc = greatgrandson.userData.claw_speed * timeElapsed;
         greatgrandson.children.forEach (child => {
             if (child.name === '1') {
-                child.rotateOnAxis(new THREE.Vector3(-1, 0, -1),  -(greatgrandson.userData.claw_speed * timeElapsed));
-                greatgrandson.userData.claw_angle += (greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, -1), -inc);
+                greatgrandson.userData.claw_angle += inc;
             }
             if (child.name === '2') {
-                child.rotateOnAxis(new THREE.Vector3(1, 0, -1),  greatgrandson.userData.claw_speed * timeElapsed);
-                greatgrandson.userData.claw_angle += (greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(1, 0, -1), inc);
+                greatgrandson.userData.claw_angle += inc;
             }
             if (child.name === '3') {
-                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), -(greatgrandson.userData.claw_speed * timeElapsed));
-                greatgrandson.userData.claw_angle += (greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), -inc);
+                greatgrandson.userData.claw_angle += inc;
             }
             if (child.name === '4') {
-                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), greatgrandson.userData.claw_speed * timeElapsed);
-                greatgrandson.userData.claw_angle += (greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), inc);
+                greatgrandson.userData.claw_angle += inc;
             }
         })
     }
 
     // Claw opening
     if (greatgrandson.userData.openClaw && greatgrandson.userData.claw_angle > greatgrandson.userData.minAngleLimit) {
+        let inc = greatgrandson.userData.claw_speed * timeElapsed;
         greatgrandson.children.forEach (child => {
             if (child.name === '1') {
-                child.rotateOnAxis(new THREE.Vector3(-1, 0, -1), greatgrandson.userData.claw_speed * timeElapsed);
-                greatgrandson.userData.claw_angle -= (greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, -1), inc);
+                greatgrandson.userData.claw_angle -= inc;
             }
             if (child.name === '2') {
-                child.rotateOnAxis(new THREE.Vector3(1, 0, -1), -(greatgrandson.userData.claw_speed * timeElapsed));
-                greatgrandson.userData.claw_angle -= (greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(1, 0, -1), -inc);
+                greatgrandson.userData.claw_angle -= inc;
             }
             if (child.name === '3') {
-                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), greatgrandson.userData.claw_speed * timeElapsed);
-                greatgrandson.userData.claw_angle -= (greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(1, 0, 1), inc);
+                greatgrandson.userData.claw_angle -= inc;
             }
             if (child.name === '4') {
-                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), -(greatgrandson.userData.claw_speed * timeElapsed));
-                greatgrandson.userData.claw_angle -= (greatgrandson.userData.claw_speed * timeElapsed);
+                child.rotateOnAxis(new THREE.Vector3(-1, 0, 1), -inc);
+                greatgrandson.userData.claw_angle -= inc;
             }
         })
     }
 
     updateViewKeys();
     updateMovementKeys();
+
     if (!animating) {
         mesh = checkCollisions();
     }
@@ -902,19 +833,17 @@ function onKeyDown(e) {
             break;
         case 55: // 7
             const materials = [
-                baseMaterial,
+                concreteMaterial,
                 containerMaterial,
                 dodecahedronCargoMaterial,
                 icosahedronCargoMaterial,
                 torusCargoMaterial,
                 containerBaseMaterial,
-                axisMaterial,
                 cabinMaterial,
                 metalMaterial,
                 cableMaterial,
                 trolleyMaterial,
-                counterWeightMaterial,
-                garraMaterial,
+                clawMaterial,
                 torusKnotCargoMaterial,
                 cubeCargoMaterial
                 ];

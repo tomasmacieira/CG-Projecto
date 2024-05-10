@@ -10,6 +10,7 @@ import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
 // cameras, scene, renderer and clock
 var camera1, camera2, camera3, camera4, camera5, camera6, currentCamera;
+let previousCamera;
 var scene, renderer, clock;
 
 // Cargos
@@ -41,11 +42,11 @@ const L_base = 9;
 const h_base = 3;
 
 const L_tower = 3;
-const h_tower = 30;
+const h_tower = 36;
 
-const h_axis = 3;
+const h_axis = 1;
 
-const L_frontJib = 36;
+const L_frontJib = 45;
 const h_frontJib = 3;
 
 const L_counterJib = 9;
@@ -58,7 +59,7 @@ const h_counterWeight = 1.5;
 const c_counterWeight = 3;
 
 const L_trolley = 3;
-const h_trolley = 3;
+const h_trolley = 1.5;
 
 const L_container = 20;
 const h_container = 8;
@@ -70,7 +71,7 @@ const initial_delta1 = 27;
 const trolleyCableRadius = 0.1; 
 
 const initial_delta2 = 9;
-const hookRadius = 1.5;
+const hookRadius = 1.5  ;
 const h_hook = 1.25;
 
 const L_clawBody = 0.5;
@@ -118,7 +119,7 @@ function createScene(){
 
     // add a floor to the scene
     let floorMaterial = new THREE.MeshBasicMaterial( {color: 0x999999, side: THREE.DoubleSide} );
-    let floorGeometry = new THREE.BoxGeometry(72, 72, 2);
+    let floorGeometry = new THREE.BoxGeometry(100, 100, 2);
     let floor = new THREE.Mesh(floorGeometry, floorMaterial);
     scene.add(floor);
     floor.rotateX(-Math.PI/2);
@@ -129,11 +130,11 @@ function createScene(){
     createFather(0, h_base/2, 0);
 
     createContainer(25, 0, 10);
-    createDodecahedronCargo(-20, 2, -10);
+    createDodecahedronCargo(-20, 2.7, -10);
     createIcosahedronCargo(10, 2.5, -17);
-    createTorusCargo(-25, 2.5, 15);
-    createCubeCargo(-5, 2.4, -16);
-    createTorusKnotCargo(-6, 1, 20);
+    createTorusCargo(-25, 2.7, 15);
+    createCubeCargo(-5, 2, -16);
+    createTorusKnotCargo(-6, 1.7, 20);
 }
 
 function createMaterials() {
@@ -258,7 +259,7 @@ function createFather(x, y, z) {
     father.position.y = y;
     father.position.z = z;
 
-    createSon(father, 0, h_tower + h_base, 0);
+    createSon(father, 0, h_tower + h_base - h_axis, 0);
 }
 
 function addBase(obj, x, y, z) {
@@ -287,13 +288,13 @@ function createSon(obj, x, y, z) {
     son.userData = { positiveRotation: false, negativeRotation: false, speed: Math.PI/4, crane_angle: 0 } 
 
     addRotationAxis(son, 0, 0, 0);
-    addFrontJib(son, L_frontJib/2 - L_tower/2, h_frontJib, 0);
-    addCounterJib(son, -L_tower*2, h_counterJib, 0);
-    addTowerPeak(son, 0, h_towerPeak, 0);
-    addCounterWeight(son, -L_tower*(5/2), h_counterWeight/2, 0);
-    addCabin(son, L_tower, 0, 0);
-    addJibCable(son, c_frontCable / 2 - 0.25, h_towerPeak + h_frontJib / 2 - 0.2, 0, c_frontCable, 0);
-    addJibCable(son, - c_counterCable / 2 + 0.8, h_towerPeak + h_frontJib / 2 - 0.2, 0, c_counterCable, 1);
+    addFrontJib(son, L_frontJib/2 - L_tower/2, h_frontJib - h_axis, 0);
+    addCounterJib(son, -L_tower*2, h_counterJib - h_axis, 0);
+    addTowerPeak(son, 0, h_towerPeak - h_axis * 2, 0);
+    addCounterWeight(son, -L_tower*(5/2), h_counterWeight/2 - h_axis, 0);
+    addCabin(son, L_tower, -h_axis, 0);
+    addJibCable(son, c_frontCable / 2 - 0.25, h_towerPeak + h_frontJib / 2 - 0.2 - h_axis, 0, c_frontCable, 0);
+    addJibCable(son, - c_counterCable / 2 + 0.8, h_towerPeak + h_frontJib / 2 - 0.2 - h_axis, 0, c_counterCable, 1);
 
     obj.add(son);
 
@@ -301,7 +302,7 @@ function createSon(obj, x, y, z) {
     son.position.y = y;
     son.position.z = z;
 
-    createGrandson(son, initial_delta1, 0, 0);
+    createGrandson(son, initial_delta1, h_axis - h_trolley + 0.3, 0);
 }
 
 function addCabin(obj, x, y, z) {
@@ -527,15 +528,15 @@ function addContainerBase(obj, x, y, z) {
     'use strict';
     geometry = new THREE.BoxGeometry(L_container, 0.3, h_container);
     mesh = new THREE.Mesh(geometry, containerBaseMaterial);
-    mesh.position.set(x, y, z);
+    mesh.position.set(x, y + 0.1, z);
     obj.add(mesh);
 }
 
 function addContainerWall(obj, x, y, z, largura, altura, espessura) {
     'use strict';
-    geometry = new THREE.BoxGeometry(largura, altura, espessura);
+    geometry = new THREE.BoxGeometry(largura, altura - 2, espessura);
     mesh = new THREE.Mesh(geometry, containerMaterial);
-    mesh.position.set(x, y, z);
+    mesh.position.set(x, y - 1, z);
     obj.add(mesh);
 }
 
@@ -690,7 +691,7 @@ function handleCollisions(mesh, timeElapsed){
     }
 
     // part5 - claw going down
-    if (greatgrandson.userData.vertical_desloc > -18.5) {
+    if (greatgrandson.userData.vertical_desloc > -20) {
         greatgrandson.translateY(-(greatgrandson.userData.vertical_speed * timeElapsed));
         grandson.children.forEach (child => {
             if (child.name === "cabo") {
@@ -865,7 +866,8 @@ function init() {
     createCamera5();
 
     currentCamera = camera4;
-
+    views_keys['Fixed orthographic camera (4)'] = true;
+    previousCamera = 'Fixed orthographic camera (4)';
     //const controls = new OrbitControls(currentCamera, renderer.domElement);
 
     render();
@@ -911,28 +913,40 @@ function onKeyDown(e) {
     switch(e.keyCode) {
         // camera switching
         case 49: // 1
+            views_keys[previousCamera] = false;
             currentCamera = camera1;
-            views_keys['Front camera (1)'] = true;
+            views_keys['Front camera (1)'] = !views_keys['Front camera (1)'];
+            previousCamera = 'Front camera (1)';
             break;
         case 50: // 2
+            views_keys[previousCamera] = false;
             currentCamera = camera2;
-            views_keys['Side camera (2)'] = true;
+            views_keys['Side camera (2)'] = !views_keys['Side camera (2)'];
+            previousCamera = 'Side camera (2)';
             break;
         case 51: // 3
+            views_keys[previousCamera] = false;         
             currentCamera = camera3;
-            views_keys['Top camera (3)'] = true;
+            views_keys['Top camera (3)'] = !views_keys['Top camera (3)'];
+            previousCamera = 'Top camera (3)';
             break;
         case 52: // 4
+            views_keys[previousCamera] = false;
             currentCamera = camera4;
-            views_keys['Fixed orthographic camera (4)'] = true;
+            views_keys['Fixed orthographic camera (4)'] = !views_keys['Fixed orthographic camera (4)'];
+            previousCamera = 'Fixed orthographic camera (4)';
             break;
         case 53: // 5
+            views_keys[previousCamera] = false;
             currentCamera = camera5;
-            views_keys['Fixed perspective camera (5)'] = true;
+            views_keys['Fixed perspective camera (5)'] = !views_keys['Fixed perspective camera (5)'];
+            previousCamera = 'Fixed perspective camera (5)';
             break;
         case 54: // 6
+            views_keys[previousCamera] = false;
             currentCamera = camera6;
-            views_keys['Mobile camera (6)'] = true;
+            views_keys['Mobile camera (6)'] = !views_keys['Mobile camera (6)'];
+            previousCamera = 'Mobile camera (6)'
             break;
         case 55: // 7
             const materials = [
@@ -956,7 +970,7 @@ function onKeyDown(e) {
             materials.forEach(function(mat) {
                 mat.wireframe = !mat.wireframe;
             });
-            views_keys['Wireframe mode on/off (7)'] = true;
+            views_keys['Wireframe mode on/off (7)'] = !views_keys['Wireframe mode on/off (7)'];
             break;
         // superior section rotation
         case 81: // Q/q
@@ -1014,25 +1028,25 @@ function onKeyUp(e){
     switch(e.keyCode) {
         // camera switching
         case 49: // 1
-            views_keys['Front camera (1)'] = false;
+            //views_keys['Front camera (1)'] = false;
             break;
         case 50: // 2
-            views_keys['Side camera (2)'] = false;
+            //views_keys['Side camera (2)'] = false;
             break;
         case 51: // 3
-            views_keys['Top camera (3)'] = false;
+            //views_keys['Top camera (3)'] = false;
             break;
         case 52: // 4
-            views_keys['Fixed orthographic camera (4)'] = false;
+            //views_keys['Fixed orthographic camera (4)'] = false;
             break;
         case 53: // 5
-            views_keys['Fixed perspective camera (5)'] = false;
+            //views_keys['Fixed perspective camera (5)'] = false;
             break;
         case 54: // 6
-            views_keys['Mobile camera (6)'] = false;
+            //views_keys['Mobile camera (6)'] = false;
             break;
         case 55:
-            views_keys['Wireframe mode on/off (7)'] = false;
+            //views_keys['Wireframe mode on/off (7)'] = false;
             break;
         // superior section rotation
         case 81: // Q/q

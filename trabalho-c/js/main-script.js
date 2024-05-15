@@ -8,8 +8,24 @@ import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 /* GLOBAL VARIABLES */
 //////////////////////
 
-var renderer, scene;
+// Cameras, scene, renderer and clock
 var perspectiveCamera, stereoCamera;
+var scene, renderer, clock;
+
+// Meshes
+var mesh;
+
+// Materials
+var geometry;
+var carouselMaterial;
+
+// Object3Ds
+var father;
+
+// Measurements
+// L: width, h: height, c: length, r: radius
+const r_cylinder = 6;
+const h_cylinder = 12;
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -19,6 +35,14 @@ function createScene(){
 
     scene = new THREE.Scene();
     scene.add(new THREE.AxesHelper(10));
+
+    createMaterials();
+
+    createFather(0, 0, 0);
+}
+
+function createMaterials() {
+    carouselMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: false });
 }
 
 //////////////////////
@@ -46,6 +70,27 @@ function createStereoCamera() {
 ////////////////////////
 /* CREATE OBJECT3D(S) */
 ////////////////////////
+function createFather(x, y, z) {
+    'use strict';
+
+    father = new THREE.Object3D();
+
+    addCentralCylinder(father, x, y, z, r_cylinder, h_cylinder);
+
+    scene.add(father);
+    father.position.set(x, y, z);
+
+    //createSon(father, 0, h_tower + h_base - h_axis, 0);
+}
+
+function addCentralCylinder(obj, x, y, z, r, h) {
+    'use strict';
+    // CylinderGeometry(radiusTop, radiusBottom, height, radialSegments)
+    geometry = new THREE.CylinderGeometry(r, r, h, 64);
+    mesh = new THREE.Mesh(geometry, carouselMaterial);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
 
 //////////////////////
 /* CHECK COLLISIONS */

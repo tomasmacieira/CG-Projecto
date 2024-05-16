@@ -753,8 +753,6 @@ function init() {
     views_keys['Fixed orthographic camera (4)'] = true;
     previousCamera = 'Fixed orthographic camera (4)';
 
-    render();
-
     window.addEventListener("resize", onResize);
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);

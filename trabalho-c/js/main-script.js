@@ -151,10 +151,57 @@ function createInnerRing(obj, x, y, z) {
 
     createRing(ring1, 0, 0, 0, outerR_ring1, innerR_ring1, h_ring1, innerRingMaterial);
     ring1.rotation.x = Math.PI / 2;
-
     ring1.position.set(x, y, z);
 
     obj.add(ring1);
+}
+
+function createMediumRing(obj, x, y, z) {
+    'use strict';
+
+    ring2 = new THREE.Object3D();
+
+    createRing(ring2, 0, 0, 0, outerR_ring2, innerR_ring2, h_ring2, mediumRingMaterial);
+    ring2.rotation.x  = Math.PI / 2;
+    ring2.position.set(x, y, z);
+
+    obj.add(ring2);
+
+}
+
+function createOuterRing(obj, x, y, z) {
+    'use strict';
+
+    ring3 = new THREE.Object3D();
+
+    createRing(ring3, 0, 0, 0, outerR_ring3, innerR_ring3, h_ring3, outerRingMaterial)
+    ring3.rotation.x  = Math.PI / 2;
+    ring3.position.set(x, y, z);
+
+    obj.add(ring3);
+}
+
+function createRing(obj, x, y, z, outerRadius, innerRadius, h, geo) {
+    'use strict';
+    var shape = new THREE.Shape();
+    shape.moveTo(outerRadius, 0);
+    shape.absarc(0, 0, outerRadius, 0, Math.PI * 2, false);
+    
+    var holePath = new THREE.Path();
+    holePath.moveTo(innerRadius, 0);
+    holePath.absarc(0, 0, innerRadius, 0, Math.PI * 2, true);
+
+    shape.holes.push(holePath);
+    
+    const extrudeSettings = {
+        bevelEnabled: false,
+        depth: h
+    };
+
+    var innerRingGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    mesh = new THREE.Mesh(innerRingGeometry, geo);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
 }
 
 
@@ -179,54 +226,6 @@ function addSeats(obj, x, y, z/*, R_ring*/){
         mesh.position.set(x, y, z);
         obj.add(mesh);
     }
-}
-
-function createMediumRing(obj, x, y, z) {
-    'use strict';
-
-    ring2 = new THREE.Object3D();
-
-    // TODO
-    createRing(ring2, 0, 0, 0, outerR_ring2, innerR_ring2, h_ring2, mediumRingMaterial);
-    ring2.rotation.x  = Math.PI / 2;
-    obj.add(ring2);
-
-    ring2.position.set(x, y, z);
-}
-
-function createOuterRing(obj, x, y, z) {
-    'use strict';
-
-    ring3 = new THREE.Object3D();
-
-    createRing(ring3, 0, 0, 0, outerR_ring3, innerR_ring3, h_ring3, outerRingMaterial)
-    ring3.rotation.x  = Math.PI / 2;
-    obj.add(ring3);
-
-    ring3.position.set(x, y, z);
-}
-
-function createRing(obj, x, y, z, outerRadius, innerRadius, h, geo) {
-    'use strict';
-    var shape = new THREE.Shape();
-    shape.moveTo(outerRadius, 0);
-    shape.absarc(0, 0, outerRadius, 0, Math.PI * 2, false);
-    
-    var holePath = new THREE.Path();
-    holePath.moveTo(innerRadius, 0);
-    holePath.absarc(0, 0, innerRadius, 0, Math.PI * 2, true);
-
-    shape.holes.push(holePath);
-    
-    const extrudeSettings = {
-        bevelEnabled: false,
-        depth: h
-    };
-
-    var innerRingGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-    mesh = new THREE.Mesh(innerRingGeometry, geo);
-    mesh.position.set(x, y, z);
-    obj.add(mesh);
 }
 
 //////////////////////

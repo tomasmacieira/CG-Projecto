@@ -86,7 +86,7 @@ function createPerspectiveCamera() {
     // PerspectiveCamera(fov, aspect, near, far)
     perspectiveCamera = new THREE.PerspectiveCamera(70,
         window.innerWidth / window.innerHeight, 1, 1000);
-    perspectiveCamera.position.set(50, 50, 50);
+    perspectiveCamera.position.set(50, 55, 40);
     perspectiveCamera.lookAt(scene.position);
 }
 

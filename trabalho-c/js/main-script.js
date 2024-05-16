@@ -20,7 +20,7 @@ var geometry;
 var carouselMaterial;
 
 // Object3Ds
-var father;
+var carousel, ring1, ring2, ring3;
 
 // Measurements
 // L: width, h: height, c: length, r: radius
@@ -38,7 +38,7 @@ function createScene(){
 
     createMaterials();
 
-    createFather(0, 0, 0);
+    createCarousel(0, 0, 0);
 }
 
 function createMaterials() {
@@ -70,17 +70,20 @@ function createStereoCamera() {
 ////////////////////////
 /* CREATE OBJECT3D(S) */
 ////////////////////////
-function createFather(x, y, z) {
+function createCarousel(x, y, z) {
     'use strict';
 
-    father = new THREE.Object3D();
+    carousel = new THREE.Object3D();
 
-    addCentralCylinder(father, x, y, z, r_cylinder, h_cylinder);
+    addCentralCylinder(carousel, x, y, z, r_cylinder, h_cylinder);
+    addMobiusStrip();
 
-    scene.add(father);
-    father.position.set(x, y, z);
+    scene.add(carousel);
+    carousel.position.set(x, y, z);
 
-    //createSon(father, 0, h_tower + h_base - h_axis, 0);
+    createRing1(carousel);
+    createRing2(carousel);
+    createRing3(carousel);
 }
 
 function addCentralCylinder(obj, x, y, z, r, h) {
@@ -90,6 +93,35 @@ function addCentralCylinder(obj, x, y, z, r, h) {
     mesh = new THREE.Mesh(geometry, carouselMaterial);
     mesh.position.set(x, y, z);
     obj.add(mesh);
+}
+
+function addMobiusStrip() {
+    'use strict';
+    // TODO
+}
+
+function createRing1() {
+    'use strict';
+
+    ring1 = new THREE.Object3D();
+
+    // TODO
+}
+
+function createRing2() {
+    'use strict';
+
+    ring2 = new THREE.Object3D();
+
+    // TODO
+}
+
+function createRing3() {
+    'use strict';
+
+    ring3 = new THREE.Object3D();
+
+    // TODO
 }
 
 //////////////////////

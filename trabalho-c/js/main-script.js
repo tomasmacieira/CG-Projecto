@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import * as Stats from 'three/addons/libs/stats.module.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.js';
 
 //////////////////////
 /* GLOBAL VARIABLES */
@@ -20,6 +21,7 @@ var geometry;
 var carouselMaterial;
 var skydomeMaterial;
 var ringMaterial;
+var seatMaterial;
 
 // Object3Ds
 var carousel, ring1, ring2, ring3;
@@ -27,13 +29,21 @@ var carousel, ring1, ring2, ring3;
 // Measurements
 // L: width, h: height, c: length, r: radius
 const r_cylinder = 6;
-const h_cylinder = 12;
+const h_cylinder = 12*2;
 
 const r_skydome = 90;
 
 const outerR_ring1 = 20;
-const innerR_ring2 = 6;
+const innerR_ring1 = 6;
 const h_ring1 = 5;
+
+const outerR_ring2 = 34;
+const innerR_ring2 = outerR_ring1;
+const h_ring2 = 5;
+
+const outerR_ring3 = 48;
+const innerR_ring3 = outerR_ring2;
+const h_ring3 = 5;
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -44,7 +54,7 @@ function createScene(){
     scene = new THREE.Scene();
     scene.add(new THREE.AxesHelper(10));
     scene.background = new THREE.Color(0xb8cef2);
-    let floor = new THREE.Mesh(new THREE.BoxGeometry(200, 200, 1), new THREE.MeshBasicMaterial({color: 0xC551E9, side: THREE.DoubleSide}));
+    let floor = new THREE.Mesh(new THREE.BoxGeometry(200, 200, 0.5), new THREE.MeshBasicMaterial({color: 0xC551E9, side: THREE.DoubleSide}));
     floor.rotateX(-Math.PI/2);
     floor.position.y = -1;
     scene.add(floor);
@@ -59,8 +69,9 @@ function createScene(){
 
 function createMaterials() {
     carouselMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: false });
-    skydomeMaterial = new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/an_optical_poem.jpg'), side: THREE.DoubleSide});
-    ringMaterial = new THREE.MeshBasicMaterial({ color: 0x1D63EF, wireframe: false });
+    ringMaterial = new THREE.MeshBasicMaterial({ color: 0x1D63EF, wireframe: false });    
+    skydomeMaterial = new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/an_optical_poem.jpg'), side: THREE.DoubleSide, transparent: true, opacity: 0.7});
+    seatMaterial = new THREE.MeshBasicMaterial({ color: 0xF4D13B, wireframe: false});
 }
 
 //////////////////////
@@ -93,10 +104,6 @@ function addSkydome(x, y, z){
     'use strict';
     //SphereGeometry(radius, widthSegments, heightSegments)
     geometry = new THREE.SphereGeometry(r_skydome, 64, 32, 0, 2 * Math.PI, 0, Math.PI / 2);
-
-    skydomeMaterial.transparent = true;
-    skydomeMaterial.opacity = 0.6;
-
     mesh = new THREE.Mesh(geometry, skydomeMaterial);
     mesh.position.set(x, y, z);
 
@@ -108,15 +115,15 @@ function createCarousel(x, y, z) {
 
     carousel = new THREE.Object3D();
 
-    addCentralCylinder(carousel, x, y, z, r_cylinder, h_cylinder);
+    addCentralCylinder(carousel, x, h_cylinder/2 , z, r_cylinder, h_cylinder);
     addMobiusStrip();
 
     scene.add(carousel);
     carousel.position.set(x, y, z);
 
-    createInnerRing(carousel, 0, h_cylinder, z);
-    createRing2(carousel);
-    createRing3(carousel);
+    createInnerRing(carousel, 0, h_cylinder/2, -2 * r_cylinder);
+    createMediumRing(carousel, 0, h_cylinder/2, -2 * r_cylinder);
+    createOuterRing(carousel, 0, h_cylinder/2, -2 * r_cylinder);
 }
 
 function addCentralCylinder(obj, x, y, z, r, h) {
@@ -139,30 +146,70 @@ function createInnerRing(obj, x, y, z) {
     ring1 = new THREE.Object3D();
 
     // TODO
-    createRing(ring1, x, y + 3, z, outerR_ring1, innerR_ring2, h_ring1);
+    createRing(ring1, x, y, z, outerR_ring1, innerR_ring1, h_ring1);
     ring1.rotation.x = Math.PI / 2;
+
+    //addSeats(ring1, x, y, z/*, innerR_ring1 + 7*/) // +7 para os seats ficarem alinhados no meio do anel, (20-6)/2 = 7
+
     obj.add(ring1);
 
     
     ring1.position.x = x;
-    ring1.position.y = y - 1;
-    ring1.position.z = z - 15;
+    ring1.position.y = y - (2 * r_cylinder);
+    ring1.position.z = z;
 }
 
-function createRing2() {
+function addSeats(obj, x, y, z/*, R_ring*/){
+    'use strict';
+
+    const seatFunctions = [
+    // Esfera
+    function(u, v) {
+      const r = 1;
+      const x = r * Math.sin(u) * Math.cos(v);
+      const y = r * Math.sin(u) * Math.sin(v);
+      const z = r * Math.cos(u);
+      return new THREE.Vector3(x, y, z);
+    },
+    // Adicionar mais 7 funcoes de superficies parametricas aqui
+    ];
+
+    for (let i = 0; i < seatFunctions.length; i++){
+        const geometry = new THREE.ParametricGeometry(seatFunctions[i], 50, 50);
+        const mesh = new THREE.Mesh(geometry, seatMaterial);
+        mesh.position.set(x, y, z);
+        obj.add(mesh);
+    }
+}
+
+function createMediumRing(obj, x, y, z) {
     'use strict';
 
     ring2 = new THREE.Object3D();
 
     // TODO
+    createRing(ring2, x, y, z, outerR_ring2, innerR_ring2, h_ring2);
+    ring2.rotation.x  = Math.PI / 2;
+    obj.add(ring2);
+
+    ring2.position.x = x;
+    ring2.position.y = y - r_cylinder;
+    ring2.position.z = z;
 }
 
-function createRing3() {
+function createOuterRing(obj, x, y, z) {
     'use strict';
 
     ring3 = new THREE.Object3D();
 
     // TODO
+    createRing(ring3, x, y, z, outerR_ring3, innerR_ring3, h_ring3)
+    ring3.rotation.x  = Math.PI / 2;
+    obj.add(ring3);
+
+    ring3.position.x = x;
+    ring3.position.y = y;
+    ring3.position.z = z;
 }
 
 function createRing(obj, x, y, z, outerRadius, innerRadius, h) {

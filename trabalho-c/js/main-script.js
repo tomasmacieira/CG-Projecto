@@ -18,6 +18,7 @@ var mesh;
 // Materials
 var geometry;
 var carouselMaterial;
+var skydomeMaterial;
 
 // Object3Ds
 var carousel, ring1, ring2, ring3;
@@ -27,6 +28,8 @@ var carousel, ring1, ring2, ring3;
 const r_cylinder = 6;
 const h_cylinder = 12;
 
+const r_skydome = 90;
+
 /////////////////////
 /* CREATE SCENE(S) */
 /////////////////////
@@ -35,14 +38,23 @@ function createScene(){
 
     scene = new THREE.Scene();
     scene.add(new THREE.AxesHelper(10));
+    scene.background = new THREE.Color(0xb8cef2);
+    let floor = new THREE.Mesh(new THREE.BoxGeometry(200, 200, 1), new THREE.MeshBasicMaterial({color: 0xC551E9, side: THREE.DoubleSide}));
+    floor.rotateX(-Math.PI/2);
+    floor.position.y = -1;
+    scene.add(floor);
+
 
     createMaterials();
+
+    addSkydome(0, 0, 0);
 
     createCarousel(0, 0, 0);
 }
 
 function createMaterials() {
     carouselMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: false });
+    skydomeMaterial = new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/an_optical_poem.jpg'), side: THREE.DoubleSide});
 }
 
 //////////////////////
@@ -70,6 +82,21 @@ function createStereoCamera() {
 ////////////////////////
 /* CREATE OBJECT3D(S) */
 ////////////////////////
+
+function addSkydome(x, y, z){
+    'use strict';
+    //SphereGeometry(radius, widthSegments, heightSegments)
+    geometry = new THREE.SphereGeometry(r_skydome, 64, 32, 0, 2 * Math.PI, 0, Math.PI / 2);
+
+    skydomeMaterial.transparent = true;
+    skydomeMaterial.opacity = 0.6;
+
+    mesh = new THREE.Mesh(geometry, skydomeMaterial);
+    mesh.position.set(x, y, z);
+
+    scene.add(mesh);
+}
+
 function createCarousel(x, y, z) {
     'use strict';
 

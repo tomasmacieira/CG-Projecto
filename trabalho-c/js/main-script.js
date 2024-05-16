@@ -19,6 +19,7 @@ var mesh;
 var geometry;
 var carouselMaterial;
 var skydomeMaterial;
+var ringMaterial;
 
 // Object3Ds
 var carousel, ring1, ring2, ring3;
@@ -29,6 +30,10 @@ const r_cylinder = 6;
 const h_cylinder = 12;
 
 const r_skydome = 90;
+
+const outerR_ring1 = 20;
+const innerR_ring2 = 6;
+const h_ring1 = 5;
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -55,6 +60,7 @@ function createScene(){
 function createMaterials() {
     carouselMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: false });
     skydomeMaterial = new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/an_optical_poem.jpg'), side: THREE.DoubleSide});
+    ringMaterial = new THREE.MeshBasicMaterial({ color: 0x1D63EF, wireframe: false });
 }
 
 //////////////////////
@@ -108,7 +114,7 @@ function createCarousel(x, y, z) {
     scene.add(carousel);
     carousel.position.set(x, y, z);
 
-    createRing1(carousel);
+    createInnerRing(carousel, 0, h_cylinder, z);
     createRing2(carousel);
     createRing3(carousel);
 }
@@ -127,12 +133,20 @@ function addMobiusStrip() {
     // TODO
 }
 
-function createRing1() {
+function createInnerRing(obj, x, y, z) {
     'use strict';
 
     ring1 = new THREE.Object3D();
 
     // TODO
+    createRing(ring1, x, y + 3, z, outerR_ring1, innerR_ring2, h_ring1);
+    ring1.rotation.x = Math.PI / 2;
+    obj.add(ring1);
+
+    
+    ring1.position.x = x;
+    ring1.position.y = y - 1;
+    ring1.position.z = z - 15;
 }
 
 function createRing2() {
@@ -149,6 +163,29 @@ function createRing3() {
     ring3 = new THREE.Object3D();
 
     // TODO
+}
+
+function createRing(obj, x, y, z, outerRadius, innerRadius, h) {
+    'use strict';
+    var shape = new THREE.Shape();
+    shape.moveTo(outerRadius, 0);
+    shape.absarc(0, 0, outerRadius, 0, Math.PI * 2, false);
+    
+    var holePath = new THREE.Path();
+    holePath.moveTo(innerRadius, 0);
+    holePath.absarc(0, 0, innerRadius, 0, Math.PI * 2, true);
+
+    shape.holes.push(holePath);
+    
+    const extrudeSettings = {
+        bevelEnabled: false,
+        depth: h
+    };
+
+    var innerRingGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    mesh = new THREE.Mesh(innerRingGeometry, ringMaterial);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
 }
 
 //////////////////////

@@ -24,26 +24,33 @@ var innerRingMaterial, mediumRingMaterial, outerRingMaterial;
 var seatMaterial;
 
 // Object3Ds
-var carousel, ring1, ring2, ring3;
+var carousel, innerRing, mediumRing, outerRing;
 
 // Measurements
 // L: width, h: height, c: length, r: radius
 const r_cylinder = 6;
-const h_cylinder = 6;
+const h_cylinder = 5;
 
-const r_skydome = 90;
+const r_skydome = 95;
+
+const h_ring = 5;
 
 const outerR_ring1 = 20;
 const innerR_ring1 = 6;
-const h_ring1 = 5;
 
 const outerR_ring2 = 34;
 const innerR_ring2 = outerR_ring1;
-const h_ring2 = 5;
 
 const outerR_ring3 = 48;
 const innerR_ring3 = outerR_ring2;
-const h_ring3 = 5;
+
+// Rings movement
+var moveInnerRing = false;
+var innerRingDown = false;
+var moveMediumRing = false;
+var mediumRingDown = false;
+var moveOuterRing = false;
+var outerRingDown = false;
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -86,7 +93,7 @@ function createPerspectiveCamera() {
     // PerspectiveCamera(fov, aspect, near, far)
     perspectiveCamera = new THREE.PerspectiveCamera(70,
         window.innerWidth / window.innerHeight, 1, 1000);
-    perspectiveCamera.position.set(50, 55, 40);
+    perspectiveCamera.position.set(50, 65, 40);
     perspectiveCamera.lookAt(scene.position);
 }
 
@@ -118,6 +125,7 @@ function createCarousel(x, y, z) {
     'use strict';
 
     carousel = new THREE.Object3D();
+    carousel.userData = { rotationSpeed: Math.PI/12 };
 
     addCentralCylinder(carousel, x, h_cylinder/2 , z, r_cylinder, h_cylinder);
     addMobiusStrip();
@@ -125,9 +133,9 @@ function createCarousel(x, y, z) {
     scene.add(carousel);
     carousel.position.set(x, y, z);
 
-    createInnerRing(carousel, 0, h_cylinder + h_ring1, 0);
-    createMediumRing(carousel, 0, h_cylinder + h_ring1 + h_ring2, 0);
-    createOuterRing(carousel, 0, h_cylinder + h_ring1 + h_ring2 + h_ring3, 0);
+    createInnerRing(carousel, 0, h_cylinder + h_ring, 0);
+    createMediumRing(carousel, 0, h_cylinder + 2*h_ring, 0);
+    createOuterRing(carousel, 0, h_cylinder + 3*h_ring, 0);
 }
 
 function addCentralCylinder(obj, x, y, z, r, h) {
@@ -144,41 +152,45 @@ function addMobiusStrip() {
     // TODO
 }
 
+// podemos fazer um só metódo a partir destas 3?
 function createInnerRing(obj, x, y, z) {
     'use strict';
 
-    ring1 = new THREE.Object3D();
+    innerRing = new THREE.Object3D();
+    innerRing.userData = { verticalSpeed: 2 }
 
-    createRing(ring1, 0, 0, 0, outerR_ring1, innerR_ring1, h_ring1, innerRingMaterial);
-    ring1.rotation.x = Math.PI / 2;
-    ring1.position.set(x, y, z);
+    createRing(innerRing, 0, 0, 0, outerR_ring1, innerR_ring1, h_ring, innerRingMaterial);
+    innerRing.rotation.x = Math.PI / 2;
+    innerRing.position.set(x, y, z);
 
-    obj.add(ring1);
+    obj.add(innerRing);
 }
 
 function createMediumRing(obj, x, y, z) {
     'use strict';
 
-    ring2 = new THREE.Object3D();
+    mediumRing = new THREE.Object3D();
+    mediumRing.userData = { verticalSpeed: 2 }
 
-    createRing(ring2, 0, 0, 0, outerR_ring2, innerR_ring2, h_ring2, mediumRingMaterial);
-    ring2.rotation.x  = Math.PI / 2;
-    ring2.position.set(x, y, z);
+    createRing(mediumRing, 0, 0, 0, outerR_ring2, innerR_ring2, h_ring, mediumRingMaterial);
+    mediumRing.rotation.x  = Math.PI / 2;
+    mediumRing.position.set(x, y, z);
 
-    obj.add(ring2);
+    obj.add(mediumRing);
 
 }
 
 function createOuterRing(obj, x, y, z) {
     'use strict';
 
-    ring3 = new THREE.Object3D();
+    outerRing = new THREE.Object3D();
+    outerRing.userData = { verticalSpeed: 2 }
 
-    createRing(ring3, 0, 0, 0, outerR_ring3, innerR_ring3, h_ring3, outerRingMaterial)
-    ring3.rotation.x  = Math.PI / 2;
-    ring3.position.set(x, y, z);
+    createRing(outerRing, 0, 0, 0, outerR_ring3, innerR_ring3, h_ring, outerRingMaterial)
+    outerRing.rotation.x  = Math.PI / 2;
+    outerRing.position.set(x, y, z);
 
-    obj.add(ring3);
+    obj.add(outerRing);
 }
 
 function createRing(obj, x, y, z, outerRadius, innerRadius, h, geo) {
@@ -250,6 +262,87 @@ function handleCollisions(){
 function update(){
     'use strict';
 
+    var timeElapsed = clock.getDelta();
+
+    let inc = carousel.userData.rotationSpeed * timeElapsed;
+    carousel.rotateY(inc);
+
+    // TODO: fix rings moving apart from each other
+
+    // inner ring movement
+    if (moveInnerRing && !innerRingDown) {
+        if (innerRing.position.y > h_cylinder) {
+            inc = innerRing.userData.verticalSpeed * timeElapsed;
+            innerRing.position.y -= inc
+        } else {
+            moveInnerRing = false;
+            innerRingDown = true;
+        }
+    } else if (moveInnerRing && innerRingDown) {
+        if (innerRing.position.y < h_cylinder + h_ring) {
+            inc = innerRing.userData.verticalSpeed * timeElapsed;
+            innerRing.position.y += inc
+        } else {
+            moveInnerRing = false;
+            innerRingDown = false;
+        }
+    }
+
+    // medium ring movement
+    if (moveMediumRing && !mediumRingDown) {
+        if (mediumRing.position.y > h_cylinder) {
+            inc = mediumRing.userData.verticalSpeed * timeElapsed;
+            mediumRing.position.y -= inc
+            console.log(mediumRing.position.y);
+        } else {
+            moveMediumRing = false;
+            mediumRingDown = true;
+        }
+    } else if (moveMediumRing && mediumRingDown) {
+        if (mediumRing.position.y < h_cylinder + 2*h_ring) {
+            inc = mediumRing.userData.verticalSpeed * timeElapsed;
+            mediumRing.position.y += inc
+            console.log(mediumRing.position.y);
+        } else {
+            moveMediumRing = false;
+            mediumRingDown = false;
+        }
+    }
+
+    // outer ring movement
+    if (moveOuterRing && !outerRingDown) {
+        if (outerRing.position.y > h_cylinder) {
+            inc = outerRing.userData.verticalSpeed * timeElapsed;
+            outerRing.position.y -= inc
+        } else {
+            moveOuterRing = false;
+            outerRingDown = true;
+        }
+    } else if (moveOuterRing && outerRingDown) {
+        if (outerRing.position.y < h_cylinder + 3*h_ring) {
+            inc = outerRing.userData.verticalSpeed * timeElapsed;
+            outerRing.position.y += inc
+        } else {
+            moveOuterRing = false;
+            outerRingDown = false;
+        }
+    }
+
+    /* 
+    if (moveMediumRing && mediumRing.position.y > h_cylinder) {
+        inc = innerRing.userData.verticalSpeed * timeElapsed;
+        mediumRing.position.y -= inc
+    } else {
+        moveMediumRing = false;
+    }
+
+    if (moveOuterRing && outerRing.position.y > h_cylinder) {
+        inc = innerRing.userData.verticalSpeed * timeElapsed;
+        outerRing.position.y -= inc
+    } else {
+        moveOuterRing = false;
+    }
+    */
 }
 
 /////////////
@@ -268,6 +361,7 @@ function init() {
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
+    clock = new THREE.Clock();
 
     /* Ponto 8
     document.body.appendChild(VRButton.createButton(renderer));
@@ -282,8 +376,6 @@ function init() {
     createPerspectiveCamera();
 
     const controls = new OrbitControls(perspectiveCamera, renderer.domElement);
-    
-    render(); // pode-se tirar?
 
     window.addEventListener("resize", onResize);
     window.addEventListener("keydown", onKeyDown);
@@ -324,10 +416,13 @@ function onKeyDown(e) {
 
     switch(e.keyCode) {
         case 49: // 1
+            moveInnerRing = !moveInnerRing;
             break;
         case 50: // 2
+            moveMediumRing = !moveMediumRing;
             break;
         case 51: // 3
+            moveOuterRing = !moveOuterRing;
             break;
         case 68: // D/d
             break;

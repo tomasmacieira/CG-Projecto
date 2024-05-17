@@ -25,7 +25,7 @@ var seatMaterial;
 var carousel, innerRing, mediumRing, outerRing;
 
 // Lights
-var directionalLight;
+var directionalLight, ambientLight;
 
 // Measurements
 // L: width, h: height, c: length, r: radius
@@ -118,15 +118,15 @@ function createStereoCamera() {
 /////////////////////
 
 function createDirectionalLight() {
-    const light = new THREE.DirectionalLight(0xffffff, 0.5);
-    light.position.set(1, 2, 1);
-    light.target.position.set(0, 0, 0);
-    scene.add(light);
+    directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    directionalLight.position.set(1, 2, 1);
+    directionalLight.target.position.set(scene.position);
+    scene.add(directionalLight);
 }
 
 function createAmbientLight() {
-    const light = new THREE.AmbientLight(0xd7930a)
-    scene.add(light);
+    ambientLight = new THREE.AmbientLight(0xd7930a)
+    scene.add(ambientLight);
 }
 ////////////////////////
 /* CREATE OBJECT3D(S) */
@@ -289,8 +289,6 @@ function update(){
     let inc = carousel.userData.rotationSpeed * timeElapsed;
     carousel.rotateY(inc);
 
-    // TODO: fix rings moving apart from each other
-
     // inner ring movement
     if (moveInnerRing && !innerRingDown) {
         if (innerRing.position.y > h_cylinder) {
@@ -315,7 +313,6 @@ function update(){
         if (mediumRing.position.y > h_cylinder) {
             inc = mediumRing.userData.verticalSpeed * timeElapsed;
             mediumRing.position.y -= inc
-            console.log(mediumRing.position.y);
         } else {
             moveMediumRing = false;
             mediumRingDown = true;
@@ -324,7 +321,6 @@ function update(){
         if (mediumRing.position.y < h_cylinder + 2*h_ring) {
             inc = mediumRing.userData.verticalSpeed * timeElapsed;
             mediumRing.position.y += inc
-            console.log(mediumRing.position.y);
         } else {
             moveMediumRing = false;
             mediumRingDown = false;
@@ -349,22 +345,6 @@ function update(){
             outerRingDown = false;
         }
     }
-
-    /* 
-    if (moveMediumRing && mediumRing.position.y > h_cylinder) {
-        inc = innerRing.userData.verticalSpeed * timeElapsed;
-        mediumRing.position.y -= inc
-    } else {
-        moveMediumRing = false;
-    }
-
-    if (moveOuterRing && outerRing.position.y > h_cylinder) {
-        inc = innerRing.userData.verticalSpeed * timeElapsed;
-        outerRing.position.y -= inc
-    } else {
-        moveOuterRing = false;
-    }
-    */
 }
 
 /////////////
@@ -447,6 +427,7 @@ function onKeyDown(e) {
             moveOuterRing = !moveOuterRing;
             break;
         case 68: // D/d
+            directionalLight.visible = !directionalLight.visible;
             break;
         case 80: // P/p
             break;

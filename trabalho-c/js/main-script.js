@@ -14,12 +14,10 @@ var perspectiveCamera, stereoCamera;
 var scene, renderer, clock;
 
 // Meshes
-var mesh;
-
+const meshes = [];
 // Materials
 var geometry;
-var carouselMaterial;
-var skydomeMaterial;
+var carouselMaterial, skydomeMaterial, lambertMaterial, phongMaterial, toonMaterial, normalMaterial, basicMaterial;
 var innerRingMaterial, mediumRingMaterial, outerRingMaterial;
 var seatMaterial;
 
@@ -90,6 +88,11 @@ function createMaterials() {
     outerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFDE49E, wireframe: false });
     skydomeMaterial = new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/an_optical_poem.jpg'), side: THREE.DoubleSide, transparent: true, opacity: 0.7});
     seatMaterial = new THREE.MeshBasicMaterial({ color: 0xF4D13B, wireframe: false});
+    lambertMaterial = new THREE.MeshLambertMaterial();
+    phongMaterial = new THREE.MeshPhongMaterial();
+    toonMaterial = new THREE.MeshToonMaterial();
+    normalMaterial = new THREE.MeshNormalMaterial();
+    basicMaterial = new THREE.MeshBasicMaterial();
 }
 
 //////////////////////
@@ -133,7 +136,7 @@ function addSkydome(x, y, z){
     'use strict';
     //SphereGeometry(radius, widthSegments, heightSegments)
     geometry = new THREE.SphereGeometry(r_skydome, 64, 32, 0, 2 * Math.PI, 0, Math.PI / 2);
-    mesh = new THREE.Mesh(geometry, skydomeMaterial);
+    var mesh = new THREE.Mesh(geometry, skydomeMaterial);
     mesh.position.set(x, y, z);
 
     scene.add(mesh);
@@ -160,9 +163,10 @@ function addCentralCylinder(obj, x, y, z, r, h) {
     'use strict';
     // CylinderGeometry(radiusTop, radiusBottom, height, radialSegments)
     geometry = new THREE.CylinderGeometry(r, r, h, 64);
-    mesh = new THREE.Mesh(geometry, carouselMaterial);
-    mesh.position.set(x, y, z);
-    obj.add(mesh);
+    var cylinderMesh = new THREE.Mesh(geometry, carouselMaterial);
+    meshes.push(cylinderMesh);
+    cylinderMesh.position.set(x, y, z);
+    obj.add(cylinderMesh);
 }
 
 function addMobiusStrip() {
@@ -180,7 +184,7 @@ function createInnerRing(obj, x, y, z) {
     createRing(innerRing, 0, 0, 0, outerR_ring1, innerR_ring1, h_ring, innerRingMaterial);
     innerRing.rotation.x = Math.PI / 2;
     innerRing.position.set(x, y, z);
-
+    var innerRingMesh;
     obj.add(innerRing);
 }
 
@@ -193,7 +197,7 @@ function createMediumRing(obj, x, y, z) {
     createRing(mediumRing, 0, 0, 0, outerR_ring2, innerR_ring2, h_ring, mediumRingMaterial);
     mediumRing.rotation.x  = Math.PI / 2;
     mediumRing.position.set(x, y, z);
-
+    var mediumRingMesh;
     obj.add(mediumRing);
 
 }
@@ -211,7 +215,7 @@ function createOuterRing(obj, x, y, z) {
     obj.add(outerRing);
 }
 
-function createRing(obj, x, y, z, outerRadius, innerRadius, h, geo) {
+function createRing(obj, x, y, z, outerRadius, innerRadius, h, geo, mesh) {
     'use strict';
     var shape = new THREE.Shape();
     shape.moveTo(outerRadius, 0);
@@ -228,8 +232,9 @@ function createRing(obj, x, y, z, outerRadius, innerRadius, h, geo) {
         depth: h
     };
 
-    var innerRingGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-    mesh = new THREE.Mesh(innerRingGeometry, geo);
+    var ringGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    var mesh = new THREE.Mesh(ringGeometry, geo);
+    meshes.push(mesh);
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -448,6 +453,10 @@ function onKeyDown(e) {
         case 83: // S/s
             break;
         case 81: // Q/q
+            meshes.forEach(mesh => {
+                lambertMaterial.color.copy(mesh.material.color);
+                mesh.material = (mesh.material === lambertMaterial) ? basicMaterial : lambertMaterial.clone();
+            });
             break;
         case 87: // W/w
             break;

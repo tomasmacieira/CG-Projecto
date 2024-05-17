@@ -58,6 +58,10 @@ function createScene(){
     floor.rotateX(-Math.PI/2);
     floor.position.y = -1;
     const axesHelper = new THREE.AxesHelper( 5 );
+    const directionalLight = createDirectionalLight();
+    const ambientLight = createAmbientLight();
+    scene.add(directionalLight);
+    scene.add(ambientLight);
     scene.add( axesHelper );
     scene.add(floor);
 
@@ -100,6 +104,15 @@ function createStereoCamera() {
 /* CREATE LIGHT(S) */
 /////////////////////
 
+function createDirectionalLight() {
+    const light = new THREE.DirectionalLight( 0xffffff, 0.5 );
+    light.position.set(1, 2, 1);
+    light.target.position.set(0, 0, 0);
+}
+
+function createAmbientLight() {
+    return new THREE.AmbientLight( 0xd7930a );
+}
 ////////////////////////
 /* CREATE OBJECT3D(S) */
 ////////////////////////
@@ -203,7 +216,6 @@ function createRing(obj, x, y, z, outerRadius, innerRadius, h, geo) {
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
-
 
 function addSeats(obj, x, y, z/*, R_ring*/){
     'use strict';

@@ -26,6 +26,9 @@ var seatMaterial;
 // Object3Ds
 var carousel, innerRing, mediumRing, outerRing;
 
+// Lights
+var directionalLight;
+
 // Measurements
 // L: width, h: height, c: length, r: radius
 const r_cylinder = 6;
@@ -61,17 +64,17 @@ function createScene(){
     scene = new THREE.Scene();
     scene.add(new THREE.AxesHelper(10));
     scene.background = new THREE.Color(0xb8cef2);
+
     let floor = new THREE.Mesh(new THREE.BoxGeometry(200, 200, 0.5), new THREE.MeshBasicMaterial({color: 0x6DC5D1, side: THREE.DoubleSide}));
     floor.rotateX(-Math.PI/2);
     floor.position.y = -1;
-    const axesHelper = new THREE.AxesHelper( 5 );
-    const directionalLight = createDirectionalLight();
-    const ambientLight = createAmbientLight();
-    scene.add(directionalLight);
-    scene.add(ambientLight);
-    scene.add( axesHelper );
     scene.add(floor);
 
+    const axesHelper = new THREE.AxesHelper(5);
+    scene.add(axesHelper);
+
+    createDirectionalLight();
+    createAmbientLight();
 
     createMaterials();
 
@@ -112,13 +115,15 @@ function createStereoCamera() {
 /////////////////////
 
 function createDirectionalLight() {
-    const light = new THREE.DirectionalLight( 0xffffff, 0.5 );
+    const light = new THREE.DirectionalLight(0xffffff, 0.5);
     light.position.set(1, 2, 1);
     light.target.position.set(0, 0, 0);
+    scene.add(light);
 }
 
 function createAmbientLight() {
-    return new THREE.AmbientLight( 0xd7930a );
+    const light = new THREE.AmbientLight(0xd7930a)
+    scene.add(light);
 }
 ////////////////////////
 /* CREATE OBJECT3D(S) */

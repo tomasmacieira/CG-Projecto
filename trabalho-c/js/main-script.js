@@ -15,14 +15,15 @@ var scene, renderer, clock;
 
 // Meshes
 const meshes = [];
+var mesh;
 // Materials
 var geometry;
 var carouselMaterial, skydomeMaterial, lambertMaterial, phongMaterial, toonMaterial, normalMaterial, basicMaterial;
-var innerRingMaterial, mediumRingMaterial, outerRingMaterial;
+var innerRingMaterial, middleRingMaterial, outerRingMaterial;
 var seatMaterial;
 
 // Object3Ds
-var carousel, innerRing, mediumRing, outerRing;
+var carousel, innerRing, middleRing, outerRing;
 
 // Lights
 var directionalLight, ambientLight;
@@ -48,8 +49,8 @@ const innerR_ring3 = outerR_ring2;
 // Rings movement
 var moveInnerRing = false;
 var innerRingDown = false;
-var moveMediumRing = false;
-var mediumRingDown = false;
+var moveMiddleRing = false;
+var middleRingDown = false;
 var moveOuterRing = false;
 var outerRingDown = false;
 
@@ -84,7 +85,7 @@ function createScene(){
 function createMaterials() {
     carouselMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: false });
     innerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xDD761C, wireframe: false });
-    mediumRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFEB941  , wireframe: false });
+    middleRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFEB941  , wireframe: false });
     outerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFDE49E, wireframe: false });
     skydomeMaterial = new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/an_optical_poem.jpg'), side: THREE.DoubleSide, transparent: true, opacity: 0.7});
     seatMaterial = new THREE.MeshBasicMaterial({ color: 0xF4D13B, wireframe: false});
@@ -155,7 +156,7 @@ function createCarousel(x, y, z) {
     carousel.position.set(x, y, z);
 
     createInnerRing(carousel, 0, h_cylinder + h_ring, 0);
-    createMediumRing(carousel, 0, h_cylinder + 2*h_ring, 0);
+    createMiddleRing(carousel, 0, h_cylinder + 2*h_ring, 0);
     createOuterRing(carousel, 0, h_cylinder + 3*h_ring, 0);
 }
 
@@ -182,23 +183,29 @@ function createInnerRing(obj, x, y, z) {
     innerRing.userData = { verticalSpeed: 2 }
 
     createRing(innerRing, 0, 0, 0, outerR_ring1, innerR_ring1, h_ring, innerRingMaterial);
+    
+    addSeats(innerRing, 0, 0, 0, (outerR_ring1-innerR_ring1) - r_cylinder/2);
+
     innerRing.rotation.x = Math.PI / 2;
     innerRing.position.set(x, y, z);
     var innerRingMesh;
     obj.add(innerRing);
 }
 
-function createMediumRing(obj, x, y, z) {
+function createMiddleRing(obj, x, y, z) {
     'use strict';
 
-    mediumRing = new THREE.Object3D();
-    mediumRing.userData = { verticalSpeed: 2 }
+    middleRing = new THREE.Object3D();
+    middleRing.userData = { verticalSpeed: 2 }
 
-    createRing(mediumRing, 0, 0, 0, outerR_ring2, innerR_ring2, h_ring, mediumRingMaterial);
-    mediumRing.rotation.x  = Math.PI / 2;
-    mediumRing.position.set(x, y, z);
-    var mediumRingMesh;
-    obj.add(mediumRing);
+    createRing(middleRing, 0, 0, 0, outerR_ring2, innerR_ring2, h_ring, middleRingMaterial);
+
+    addSeats(middleRing, 0, 0, 0, (outerR_ring2-innerR_ring1) - r_cylinder/2);
+
+    middleRing.rotation.x  = Math.PI / 2;
+    middleRing.position.set(x, y, z);
+    var middleRingMesh;
+    obj.add(middleRing);
 
 }
 
@@ -209,6 +216,9 @@ function createOuterRing(obj, x, y, z) {
     outerRing.userData = { verticalSpeed: 2 }
 
     createRing(outerRing, 0, 0, 0, outerR_ring3, innerR_ring3, h_ring, outerRingMaterial)
+
+    addSeats(outerRing, 0, 0, 0, (outerR_ring3-innerR_ring1) - r_cylinder/2);
+
     outerRing.rotation.x  = Math.PI / 2;
     outerRing.position.set(x, y, z);
 
@@ -239,24 +249,92 @@ function createRing(obj, x, y, z, outerRadius, innerRadius, h, geo, mesh) {
     obj.add(mesh);
 }
 
-function addSeats(obj, x, y, z/*, R_ring*/){
+function createSeatGeometries(){
+
+    const geometries = [];
+
+    // Esfera
+    geometries.push(function sphere( u, v, target ) {
+
+        const r = 4;
+        u *= Math.PI;
+        v *= 2 * Math.PI;
+
+        const x = r * Math.sin( u ) * Math.cos( v );
+        const y = r * Math.sin( u ) * Math.sin( v );
+        const z =  r * Math.cos( u );
+
+        target.set( x, y, z);
+    });
+
+    // Cilindro
+    geometries.push(function cylinder(u, v, target) {
+        const r = 2;
+        const h = 4;
+    
+        const x = r * Math.cos(v * 2 * Math.PI);
+        const y = h * (u - 0.5);
+        const z = r * Math.sin(v * 2 * Math.PI);
+    
+        target.set(x, y, z);
+    });
+
+    // Cone
+    geometries.push(function cone(u, v, target) {
+        const r = 2;
+        const h = 4;
+    
+        const x = (1 - u) * r * Math.cos(v * 2 * Math.PI);
+        const y = h * (u - 0.5);
+        const z = (1 - u) * r * Math.sin(v * 2 * Math.PI);
+    
+        target.set(x, y, z);
+    });
+
+    // Tronco de Cone
+    geometries.push(function truncatedCone(u, v, target) {
+        const rT = 1;
+        const rB= 2;
+        const h = 4;
+    
+        const r = (1 - u) * rB + u * rT;
+        const x = r * Math.cos(v * 2 * Math.PI);
+        const y = h * (u - 0.5);
+        const z = r * Math.sin(v * 2 * Math.PI);
+    
+        target.set(x, y, z);
+    });
+
+    // Cone Inclinado
+    geometries.push(function inclinedCone(u, v, target) {
+        const r = 2;
+        const h = 4;
+    
+        const x = (1 - u) * r * Math.cos(v * 2 * Math.PI);
+        const y = h * (u - 0.5);
+        const z = (1 - u) * r * Math.sin(v * 2 * Math.PI) + 2 * u;
+    
+        target.set(x, y, z);
+    });
+
+    return geometries;
+}
+
+function addSeats(obj, x, y, z, R_ring){
     'use strict';
 
-    const seatFunctions = [
-    // Esfera
-    function(u, v) {
-      const r = 1;
-      const x = r * Math.sin(u) * Math.cos(v);
-      const y = r * Math.sin(u) * Math.sin(v);
-      const z = r * Math.cos(u);
-      return new THREE.Vector3(x, y, z);
-    },
-    // Adicionar mais 7 funcoes de superficies parametricas aqui
-    ];
+    const seatFunctions = createSeatGeometries();
+
+    const angleIncrement = 45;
 
     for (let i = 0; i < seatFunctions.length; i++){
-        const geometry = new THREE.ParametricGeometry(seatFunctions[i], 50, 50);
-        const mesh = new THREE.Mesh(geometry, seatMaterial);
+        const angle = i * angleIncrement * (Math.PI / 180);
+        x = R_ring * Math.cos(angle);
+        y = R_ring * Math.sin(angle);
+        z = -4;
+
+        geometry = new ParametricGeometry(seatFunctions[i], 50, 50);
+        mesh = new THREE.Mesh(geometry, seatMaterial);
         mesh.position.set(x, y, z);
         obj.add(mesh);
     }
@@ -308,22 +386,22 @@ function update(){
         }
     }
 
-    // medium ring movement
-    if (moveMediumRing && !mediumRingDown) {
-        if (mediumRing.position.y > h_cylinder) {
-            inc = mediumRing.userData.verticalSpeed * timeElapsed;
-            mediumRing.position.y -= inc
+    // middle ring movement
+    if (moveMiddleRing && !middleRingDown) {
+        if (middleRing.position.y > h_cylinder) {
+            inc = middleRing.userData.verticalSpeed * timeElapsed;
+            middleRing.position.y -= inc
         } else {
-            moveMediumRing = false;
-            mediumRingDown = true;
+            moveMiddleRing = false;
+            middleRingDown = true;
         }
-    } else if (moveMediumRing && mediumRingDown) {
-        if (mediumRing.position.y < h_cylinder + 2*h_ring) {
-            inc = mediumRing.userData.verticalSpeed * timeElapsed;
-            mediumRing.position.y += inc
+    } else if (moveMiddleRing && middleRingDown) {
+        if (middleRing.position.y < h_cylinder + 2*h_ring) {
+            inc = middleRing.userData.verticalSpeed * timeElapsed;
+            middleRing.position.y += inc
         } else {
-            moveMediumRing = false;
-            mediumRingDown = false;
+            moveMiddleRing = false;
+            middleRingDown = false;
         }
     }
 
@@ -421,7 +499,7 @@ function onKeyDown(e) {
             moveInnerRing = !moveInnerRing;
             break;
         case 50: // 2
-            moveMediumRing = !moveMediumRing;
+            moveMiddleRing = !moveMiddleRing;
             break;
         case 51: // 3
             moveOuterRing = !moveOuterRing;

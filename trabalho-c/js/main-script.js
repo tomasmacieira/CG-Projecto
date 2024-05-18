@@ -28,6 +28,10 @@ var carousel, innerRing, middleRing, outerRing;
 
 // Lights
 var directionalLight, ambientLight;
+var reactingToLight = false;
+
+// Colors
+var newColor;
 
 // Measurements
 // L: width, h: height, c: length, r: radius
@@ -87,15 +91,10 @@ function createScene(){
 function createMaterials() {
     carouselMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: false });
     innerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xDD761C, wireframe: false });
-    middleRing = new THREE.MeshBasicMaterial({ color: 0xFEB941, wireframe: false });
+    middleRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFEB941, wireframe: false });
     outerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFDE49E, wireframe: false });
     skydomeMaterial = new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/an_optical_poem.jpg'), side: THREE.DoubleSide, transparent: true, opacity: 0.7});
     seatMaterial = new THREE.MeshBasicMaterial({ color: 0xF4D13B, wireframe: false});
-    lambertMaterial = new THREE.MeshLambertMaterial();
-    phongMaterial = new THREE.MeshPhongMaterial();
-    toonMaterial = new THREE.MeshToonMaterial();
-    normalMaterial = new THREE.MeshNormalMaterial();
-    basicMaterial = new THREE.MeshBasicMaterial();
     mobiusStripMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, wireframe: true });
 }
 
@@ -167,6 +166,7 @@ function addCentralCylinder(obj, x, y, z, r, h) {
     // CylinderGeometry(radiusTop, radiusBottom, height, radialSegments)
     geometry = new THREE.CylinderGeometry(r, r, h, 64);
     cylinderMesh = new THREE.Mesh(geometry, carouselMaterial);
+    cylinderMesh.userData.originalColor = carouselMaterial.color.clone();
     meshes.push(cylinderMesh);
     cylinderMesh.position.set(x, y, z);
     obj.add(cylinderMesh);
@@ -260,6 +260,7 @@ function addRing(obj, x, y, z, outerRadius, innerRadius, h, mat, mesh) {
 
     var ringGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
     mesh = new THREE.Mesh(ringGeometry, mat);
+    mesh.userData.originalColor = mat.color.clone();
     meshes.push(mesh);
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -535,17 +536,44 @@ function onKeyDown(e) {
             break;
         case 81: // Q/q
             meshes.forEach(mesh => {
-                lambertMaterial.color.copy(mesh.material.color);
-                mesh.material = (mesh.material === lambertMaterial) ? basicMaterial : lambertMaterial.clone();
+                newColor = mesh.userData.originalColor.clone()
+                lambertMaterial = new THREE.MeshLambertMaterial({ color: newColor });
+                mesh.material = lambertMaterial;
             });
+            reactingToLight = true;
             break;
         case 87: // W/w
+            meshes.forEach(mesh => {
+                newColor = mesh.userData.originalColor.clone()
+                phongMaterial = new THREE.MeshPhongMaterial({ color: newColor});
+                mesh.material = phongMaterial;
+            });
+            reactingToLight = true;
             break;
         case 69: // E/e
+            meshes.forEach(mesh => {
+                newColor = mesh.userData.originalColor.clone()
+                toonMaterial = new THREE.MeshToonMaterial({ color: newColor});
+                mesh.material = toonMaterial;
+            });
+            reactingToLight = true;
             break;
         case 82: // R/r
+            meshes.forEach(mesh => {
+                normalMaterial = new THREE.MeshNormalMaterial();
+                mesh.material = normalMaterial;
+            });
             break;
         case 84: // T/t
+            if (reactingToLight) {
+                console.log("entrei");
+                meshes.forEach(mesh => {
+                    newColor = mesh.userData.originalColor.clone()
+                    basicMaterial = new THREE.MeshBasicMaterial({ color: newColor});
+                    mesh.material = basicMaterial;
+                })
+                reactingToLight = false;
+            }
             break;
     }
 }

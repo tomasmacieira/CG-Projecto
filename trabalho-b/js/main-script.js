@@ -776,13 +776,6 @@ function animate() {
 ////////////////////////////
 function onResize() { 
     'use strict';
-
-    renderer.setSize(window.innerWidth, window.innerHeight);
-
-    if (window.innerHeight > 0 && window.innerWidth > 0) {
-        currentCamera.aspect = window.innerWidth / window.innerHeight;
-        currentCamera.updateProjectionMatrix();
-    }
 }
 
 ///////////////////////

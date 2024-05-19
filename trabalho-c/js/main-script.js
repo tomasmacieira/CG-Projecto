@@ -21,7 +21,7 @@ var mesh, cylinderMesh, mobiusStripMesh, innerRingMesh, middleRingMesh, outerRin
 // Materials
 var geometry;
 var carouselMaterial, skydomeMaterial, mobiusStripMaterial;
-var lambertMaterial, phongMaterial, toonMaterial, normalMaterial, basicMaterial;
+var lambertMaterial, phongMaterial, toonMaterial, normalMaterial, basicMaterial, currentMaterial;
 var innerRingMaterial, middleRingMaterial, outerRingMaterial, seatMaterial;
 
 // Object3Ds
@@ -90,6 +90,7 @@ function createScene(){
 }
 
 function createMaterials() {
+    currentMaterial = new THREE.MeshBasicMaterial();
     carouselMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: false });
     innerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xDD761C, wireframe: false });
     middleRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFEB941, wireframe: false });
@@ -625,6 +626,7 @@ function onKeyDown(e) {
                 mesh.material = lambertMaterial;
             });
             reactingToLight = true;
+            currentMaterial = lambertMaterial;
             break;
         case 87: // W/w
             meshes.forEach(mesh => {
@@ -633,6 +635,7 @@ function onKeyDown(e) {
                 mesh.material = phongMaterial;
             });
             reactingToLight = true;
+            currentMaterial = phongMaterial;
             break;
         case 69: // E/e
             meshes.forEach(mesh => {
@@ -641,22 +644,32 @@ function onKeyDown(e) {
                 mesh.material = toonMaterial;
             });
             reactingToLight = true;
+            currentMaterial = toonMaterial;
             break;
         case 82: // R/r
             meshes.forEach(mesh => {
                 normalMaterial = new THREE.MeshNormalMaterial();
                 mesh.material = normalMaterial;
             });
+            reactingToLight = true;
+            currentMaterial = normalMaterial;
             break;
         case 84: // T/t
             if (reactingToLight) {
-                console.log("entrei");
                 meshes.forEach(mesh => {
                     newColor = mesh.userData.originalColor.clone()
                     basicMaterial = new THREE.MeshBasicMaterial({ color: newColor});
                     mesh.material = basicMaterial;
                 })
                 reactingToLight = false;
+            } else {
+                meshes.forEach(mesh => {
+                    newColor = mesh.userData.originalColor.clone();
+                    let newMaterial = currentMaterial.clone();
+                    newMaterial.color = newColor;
+                    mesh.material = newMaterial;
+                })
+                reactingToLight = true;
             }
             break;
     }

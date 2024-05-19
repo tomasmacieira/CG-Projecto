@@ -15,6 +15,7 @@ var scene, renderer, clock;
 
 // Meshes
 const meshes = [];
+const seatMeshes = [];
 var mesh, cylinderMesh, mobiusStripMesh, innerRingMesh, middleRingMesh, outerRingMesh, skydomeMesh;
 
 // Materials
@@ -94,7 +95,7 @@ function createMaterials() {
     middleRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFEB941, wireframe: false });
     outerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFDE49E, wireframe: false });
     skydomeMaterial = new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/an_optical_poem.jpg'), side: THREE.DoubleSide, transparent: true, opacity: 0.7});
-    seatMaterial = new THREE.MeshBasicMaterial({ color: 0xF4D13B, wireframe: false});
+    seatMaterial = new THREE.MeshBasicMaterial({ color: 0xF4D13B, wireframe: false, side: THREE.DoubleSide});
     mobiusStripMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, wireframe: true });
 }
 
@@ -307,7 +308,7 @@ function createSeatGeometries(){
     // Cilindro
     geometries.push(function cylinder(u, v, target) {
         const r = 2;
-        const h = 4;
+        const h = 6;
     
         const x = r * Math.cos(v * 2 * Math.PI);
         const y = h * (u - 0.5);
@@ -345,11 +346,27 @@ function createSeatGeometries(){
     // Cone Inclinado
     geometries.push(function inclinedCone(u, v, target) {
         const r = 2;
-        const h = 4;
+        const h = 6;
     
         const x = (1 - u) * r * Math.cos(v * 2 * Math.PI);
         const y = h * (u - 0.5);
         const z = (1 - u) * r * Math.sin(v * 2 * Math.PI) + 2 * u;
+    
+        target.set(x, y, z);
+    });
+
+    // Hiperboloide de uma Folha
+    geometries.push(function hyperboloidOneSheet(u, v, target) {
+        const a = 0.5;
+        const b = 0.5;
+        const c = 1;
+    
+        v *= 2 * Math.PI;
+        u = (u - 0.5) * 4;
+    
+        const x = a * Math.cosh(u) * Math.cos(v);
+        const y = b * Math.cosh(u) * Math.sin(v);
+        const z = c * Math.sinh(u);
     
         target.set(x, y, z);
     });
@@ -372,8 +389,15 @@ function addSeats(obj, x, y, z, R_ring){
 
         geometry = new ParametricGeometry(seatFunctions[i], 50, 50);
         mesh = new THREE.Mesh(geometry, seatMaterial);
+
+        mesh.userData.rotationSpeed = 0.005;
+        mesh.userData.rotateAxis = new THREE.Vector3(Math.random() * 1 + 0.1, 1, 0);
+
         mesh.position.set(x, y, z);
+        mesh.rotation.x = - Math.PI/2;
         obj.add(mesh);
+
+        seatMeshes.push(mesh);
     }
 }
 
@@ -401,6 +425,10 @@ function update(){
 
     let inc = carousel.userData.rotationSpeed * timeElapsed;
     carousel.rotateY(inc);
+
+    seatMeshes.forEach(mesh => {
+        mesh.rotateOnAxis(mesh.userData.rotateAxis, mesh.userData.rotationSpeed);
+    });
 
     // inner ring movement
     if (moveInnerRing && !innerRingDown) {

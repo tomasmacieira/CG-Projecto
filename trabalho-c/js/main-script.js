@@ -149,7 +149,7 @@ function createCarousel(x, y, z) {
     'use strict';
 
     carousel = new THREE.Object3D();
-    carousel.userData = { rotationSpeed: /*Math.PI/12*/0 };
+    carousel.userData = { rotationSpeed: Math.PI/12 };
 
     addCentralCylinder(carousel, 0, h_cylinder/2, 0, r_cylinder, h_cylinder);
     addMobiusStrip(carousel, 0, h_strip, 0);

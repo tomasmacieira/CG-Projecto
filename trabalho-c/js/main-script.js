@@ -28,6 +28,8 @@ var innerRingMaterial, middleRingMaterial, outerRingMaterial, seatMaterial;
 var carousel, innerRing, middleRing, outerRing;
 
 // Lights
+const pointLights = [];
+var light1, light2, light3, light4, light5, light6, light7, light8;
 var directionalLight, ambientLight;
 var reactingToLight = false;
 
@@ -97,7 +99,7 @@ function createMaterials() {
     outerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFDE49E, wireframe: false });
     skydomeMaterial = new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/an_optical_poem.jpg'), side: THREE.DoubleSide, transparent: true, opacity: 0.7});
     seatMaterial = new THREE.MeshBasicMaterial({ color: 0xF4D13B, wireframe: false, side: THREE.DoubleSide});
-    mobiusStripMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, wireframe: true });
+    mobiusStripMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, side: THREE.DoubleSide, wireframe: false });
 }
 
 //////////////////////
@@ -133,6 +135,13 @@ function createAmbientLight() {
     ambientLight = new THREE.AmbientLight(0xd7930a)
     scene.add(ambientLight);
 }
+
+function createPointLight(x, y, z, light) {
+    light = new THREE.PointLight( 0xff0000, 1, 100 );
+    light.position.set(x, y, z);
+    scene.add(light);
+    pointLights.push(light);
+}
 ////////////////////////
 /* CREATE OBJECT3D(S) */
 ////////////////////////
@@ -154,7 +163,16 @@ function createCarousel(x, y, z) {
 
     addCentralCylinder(carousel, 0, h_cylinder/2, 0, r_cylinder, h_cylinder);
     addMobiusStrip(carousel, 0, h_strip, 0);
-
+    
+    createPointLight(0.6, h_strip + 2.0, 1.8, light1);
+    createPointLight(-1.4, h_strip + 2.0, 2.0, light2);
+    createPointLight(-4.2, h_strip + 2.2, 1.6, light3);
+    createPointLight(-4.4, h_strip + 3.0, -2.4, light4);
+    createPointLight(-2.6, h_strip + 3.2, -2.4, light5);
+    createPointLight(-0.4, h_strip + 0.6, -1.0, light6);
+    createPointLight(1.4, h_strip - 1.0, -0.6, light7);
+    createPointLight(3.4, h_strip - 2.6, -0.2, light8);
+    
     scene.add(carousel);
     carousel.position.set(x, y, z);
 
@@ -616,6 +634,10 @@ function onKeyDown(e) {
             ambientLight.visible = !ambientLight.visible;
             break;
         case 80: // P/p
+            console.log("entrou p")
+            pointLights.forEach(pointLight => {
+                pointLight.visible = !pointLight.visible;
+            })
             break;
         case 83: // S/s
             break;

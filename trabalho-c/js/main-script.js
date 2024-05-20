@@ -100,7 +100,7 @@ function createMaterials() {
     outerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFDE49E, wireframe: false });
     skydomeMaterial = new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/an_optical_poem.jpg'), side: THREE.DoubleSide, transparent: true, opacity: 0.7});
     seatMaterial = new THREE.MeshBasicMaterial({ color: 0xB95743, wireframe: false, side: THREE.DoubleSide});
-    mobiusStripMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, side: THREE.DoubleSide, wireframe: false });
+    mobiusStripMaterial = new THREE.MeshLambertMaterial({ color: 0xEABE6C, side: THREE.DoubleSide, wireframe: false });
 }
 
 //////////////////////
@@ -138,7 +138,7 @@ function createAmbientLight() {
 }
 
 function createPointLight(x, y, z, light) {
-    light = new THREE.PointLight( 0xff0000, 1, 100 );
+    light = new THREE.PointLight( 0xff0000, 10, 300 );
     light.position.set(x, y, z);
     scene.add(light);
     pointLights.push(light);
@@ -176,16 +176,16 @@ function createCarousel(x, y, z) {
     carousel.userData = { rotationSpeed: Math.PI/12 };
 
     addCentralCylinder(carousel, 0, h_cylinder/2, 0, r_cylinder, h_cylinder);
-    addMobiusStrip(carousel, 0, h_strip, 0);
+    addMobiusStrip(carousel, 0, h_cylinder + h_strip, 0);
     
-    createPointLight(0.6, h_strip + 2.0, 1.8, light1);
-    createPointLight(-1.4, h_strip + 2.0, 2.0, light2);
-    createPointLight(-4.2, h_strip + 2.2, 1.6, light3);
-    createPointLight(-4.4, h_strip + 3.0, -2.4, light4);
-    createPointLight(-2.6, h_strip + 3.2, -2.4, light5);
-    createPointLight(-0.4, h_strip + 0.6, -1.0, light6);
-    createPointLight(1.4, h_strip - 1.0, -0.6, light7);
-    createPointLight(3.4, h_strip - 2.6, -0.2, light8);
+    createPointLight(0.6, h_cylinder + h_strip + 2.0, 1.8, light1);
+    createPointLight(-1.4, h_cylinder + h_strip + 2.0, 2.0, light2);
+    createPointLight(-4.2, h_cylinder + h_strip + 2.2, 1.6, light3);
+    createPointLight(-4.4, h_cylinder + h_strip + 3.0, -2.4, light4);
+    createPointLight(-2.6, h_cylinder + h_strip + 3.2, -2.4, light5);
+    createPointLight(-0.4, h_cylinder + h_strip + 0.6, -1.0, light6);
+    createPointLight(1.4, h_cylinder + h_strip - 1.0, -0.6, light7);
+    createPointLight(3.4, h_cylinder + h_strip - 2.6, -0.2, light8);
     
     scene.add(carousel);
     carousel.position.set(x, y, z);
@@ -646,10 +646,10 @@ function onKeyDown(e) {
         case 68: // D/d
             directionalLight.visible = !directionalLight.visible;
             break;
-        // remover tecla S depois
-        /*case 83: // S/s
+        // remover tecla A depois
+        case 65: // A/a
             ambientLight.visible = !ambientLight.visible;
-            break;*/
+            break;
         case 80: // P/p
             pointLights.forEach(pointLight => {
                 pointLight.visible = !pointLight.visible;

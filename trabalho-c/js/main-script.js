@@ -29,8 +29,9 @@ var carousel, innerRing, middleRing, outerRing;
 
 // Lights
 const pointLights = [];
+const spotLights = [];
 var light1, light2, light3, light4, light5, light6, light7, light8;
-var directionalLight, ambientLight;
+var directionalLight, ambientLight, spotLight;
 var reactingToLight = false;
 
 // Colors
@@ -98,7 +99,7 @@ function createMaterials() {
     middleRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFEB941, wireframe: false });
     outerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFDE49E, wireframe: false });
     skydomeMaterial = new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/an_optical_poem.jpg'), side: THREE.DoubleSide, transparent: true, opacity: 0.7});
-    seatMaterial = new THREE.MeshBasicMaterial({ color: 0xF4D13B, wireframe: false, side: THREE.DoubleSide});
+    seatMaterial = new THREE.MeshBasicMaterial({ color: 0xB95743, wireframe: false, side: THREE.DoubleSide});
     mobiusStripMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, side: THREE.DoubleSide, wireframe: false });
 }
 
@@ -142,6 +143,19 @@ function createPointLight(x, y, z, light) {
     scene.add(light);
     pointLights.push(light);
 }
+
+function createSpotLight(obj, mesh, x, y, z) {
+    spotLight = new THREE.SpotLight(0xFFFFFF, 200);
+    spotLight.position.set(x, y, z);
+    spotLight.target = mesh;
+    spotLight.angle = 0.7;
+	spotLight.distance = 10;
+    spotLight.visible = false;
+
+    obj.add(spotLight);
+    spotLights.push(spotLight);
+}
+
 ////////////////////////
 /* CREATE OBJECT3D(S) */
 ////////////////////////
@@ -349,7 +363,7 @@ function createSeatGeometries(){
     // Esfera
     geometries.push(function sphere( u, v, target ) {
 
-        const r = 4;
+        const r = 3.5;
         u *= Math.PI;
         v *= 2 * Math.PI;
 
@@ -412,9 +426,9 @@ function createSeatGeometries(){
 
     // Hiperboloide de uma Folha
     geometries.push(function hyperboloidOneSheet(u, v, target) {
-        const a = 0.5;
-        const b = 0.5;
-        const c = 1;
+        const a = 0.375;
+        const b = 0.375;
+        const c = 0.75;
     
         v *= 2 * Math.PI;
         u = (u - 0.5) * 4;
@@ -440,19 +454,22 @@ function addSeats(obj, x, y, z, R_ring){
         const angle = i * angleIncrement * (Math.PI / 180);
         x = R_ring * Math.cos(angle);
         y = R_ring * Math.sin(angle);
-        z = -4;
+        z = - 6;
 
         geometry = new ParametricGeometry(seatFunctions[i], 50, 50);
         mesh = new THREE.Mesh(geometry, seatMaterial);
 
         mesh.userData.rotationSpeed = 0.005;
-        mesh.userData.rotateAxis = new THREE.Vector3(Math.random() * 1 + 0.1, 1, 0);
+        mesh.userData.rotateAxis = new THREE.Vector3(Math.random() * 1, 1, 0);
+        mesh.userData.originalColor = seatMaterial.color.clone();
 
         mesh.position.set(x, y, z);
         mesh.rotation.x = - Math.PI/2;
-        obj.add(mesh);
-
         seatMeshes.push(mesh);
+        
+        createSpotLight(obj, mesh, x, y, 0);
+        
+        obj.add(mesh);
     }
 }
 
@@ -630,22 +647,30 @@ function onKeyDown(e) {
             directionalLight.visible = !directionalLight.visible;
             break;
         // remover tecla S depois
-        case 83: // S/s
+        /*case 83: // S/s
             ambientLight.visible = !ambientLight.visible;
-            break;
+            break;*/
         case 80: // P/p
-            console.log("entrou p")
             pointLights.forEach(pointLight => {
                 pointLight.visible = !pointLight.visible;
             })
             break;
         case 83: // S/s
+            spotLights.forEach(spotLight => {
+                spotLight.visible = !spotLight.visible;
+            })
+
             break;
         case 81: // Q/q
             meshes.forEach(mesh => {
                 newColor = mesh.userData.originalColor.clone()
-                lambertMaterial = new THREE.MeshLambertMaterial({ color: newColor });
+                lambertMaterial = new THREE.MeshLambertMaterial({ color: newColor, side: THREE.DoubleSide });
                 mesh.material = lambertMaterial;
+            });
+            seatMeshes.forEach(smesh => {
+                newColor = smesh.userData.originalColor.clone();
+                lambertMaterial = new THREE.MeshLambertMaterial({ color: newColor, side: THREE.DoubleSide });
+                smesh.material = lambertMaterial;
             });
             reactingToLight = true;
             currentMaterial = lambertMaterial;
@@ -653,8 +678,13 @@ function onKeyDown(e) {
         case 87: // W/w
             meshes.forEach(mesh => {
                 newColor = mesh.userData.originalColor.clone()
-                phongMaterial = new THREE.MeshPhongMaterial({ color: newColor});
+                phongMaterial = new THREE.MeshPhongMaterial({ color: newColor, side: THREE.DoubleSide});
                 mesh.material = phongMaterial;
+            });
+            seatMeshes.forEach(smesh => {
+                newColor = smesh.userData.originalColor.clone();
+                phongMaterial = new THREE.MeshPhongMaterial({ color: newColor, side: THREE.DoubleSide });
+                smesh.material = phongMaterial;
             });
             reactingToLight = true;
             currentMaterial = phongMaterial;
@@ -662,8 +692,13 @@ function onKeyDown(e) {
         case 69: // E/e
             meshes.forEach(mesh => {
                 newColor = mesh.userData.originalColor.clone()
-                toonMaterial = new THREE.MeshToonMaterial({ color: newColor});
+                toonMaterial = new THREE.MeshToonMaterial({ color: newColor, side: THREE.DoubleSide});
                 mesh.material = toonMaterial;
+            });
+            seatMeshes.forEach(smesh => {
+                newColor = smesh.userData.originalColor.clone();
+                toonMaterial = new THREE.MeshToonMaterial({ color: newColor, side: THREE.DoubleSide});
+                smesh.material = toonMaterial;
             });
             reactingToLight = true;
             currentMaterial = toonMaterial;
@@ -673,6 +708,10 @@ function onKeyDown(e) {
                 normalMaterial = new THREE.MeshNormalMaterial();
                 mesh.material = normalMaterial;
             });
+            seatMeshes.forEach(smesh => {
+                normalMaterial = new THREE.MeshNormalMaterial();
+                smesh.material = normalMaterial;
+            });
             reactingToLight = true;
             currentMaterial = normalMaterial;
             break;
@@ -680,8 +719,13 @@ function onKeyDown(e) {
             if (reactingToLight) {
                 meshes.forEach(mesh => {
                     newColor = mesh.userData.originalColor.clone()
-                    basicMaterial = new THREE.MeshBasicMaterial({ color: newColor});
+                    basicMaterial = new THREE.MeshBasicMaterial({ color: newColor, side: THREE.DoubleSide});
                     mesh.material = basicMaterial;
+                })
+                seatMeshes.forEach(smesh => {
+                    newColor = smesh.userData.originalColor.clone()
+                    basicMaterial = new THREE.MeshBasicMaterial({ color: newColor, side: THREE.DoubleSide});
+                    smesh.material = basicMaterial;
                 })
                 reactingToLight = false;
             } else {
@@ -690,6 +734,12 @@ function onKeyDown(e) {
                     let newMaterial = currentMaterial.clone();
                     newMaterial.color = newColor;
                     mesh.material = newMaterial;
+                })
+                seatMeshes.forEach(smesh => {
+                    newColor = smesh.userData.originalColor.clone()
+                    let newMaterial = currentMaterial.clone();
+                    newMaterial.color = newColor;
+                    smesh.material = newMaterial;
                 })
                 reactingToLight = true;
             }

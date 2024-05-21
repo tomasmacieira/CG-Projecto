@@ -40,7 +40,7 @@ var newColor;
 // Measurements
 // L: width, h: height, c: length, r: radius
 const r_cylinder = 6;
-const h_cylinder = 5;
+const h_cylinder = 20;
 
 const r_skydome = 95;
 const h_strip = 21;
@@ -57,11 +57,11 @@ const outerR_ring3 = 48;
 const innerR_ring3 = outerR_ring2;
 
 // Rings movement
-var moveInnerRing = false;
+var moveInnerRing = true;
 var innerRingDown = false;
-var moveMiddleRing = false;
+var moveMiddleRing = true;
 var middleRingDown = false;
-var moveOuterRing = false;
+var moveOuterRing = true;
 var outerRingDown = false;
 
 /////////////////////
@@ -118,7 +118,7 @@ function createPerspectiveCamera() {
 function createStereoCamera() {
     'use strict';
     // StereoCamera()
-    stereoCamera = THREE.StereoCamera();
+    stereoCamera = new THREE.StereoCamera();
 }
 
 /////////////////////
@@ -245,42 +245,43 @@ function addMobiusStrip(obj, x, y, z) {
         1.2, 2.0, 1.2, // v32
     ] );
     const indices = [
-        0, 1, 2,
-        0, 2, 3,
+        1, 0, 2,
+        2, 0, 3,
         2, 3, 4,
-        3, 4, 5,
+        4, 3, 5,
         4, 5, 6,
-        5, 6, 7,
+        6, 5, 7,
         6, 7, 8,
-        7, 8, 9,
+        8, 7, 9,
         8, 9, 10,
-        9, 10, 11,
+        10, 9, 11,
         10, 11, 12,
-        11, 12, 13,
+        12, 11, 13,
         12, 13, 14,
-        13, 14, 15,
+        14, 13, 15,
         14, 15, 16,
-        15, 16, 17,
+        16, 15, 17,
         16, 17, 18,
-        17, 18, 19,
+        18, 17, 19,
         18, 19, 20,
-        19, 20, 21,
+        20, 19, 21,
         20, 21, 22,
-        21, 22, 23,
+        22, 21, 23,
         22, 23, 24,
-        23, 24, 25,
+        24, 23, 25,
         24, 25, 26,
-        25, 26, 27,
+        26, 25, 27,
         26, 27, 28,
-        27, 28, 29,
+        28, 27, 29,
         28, 29, 30,
-        29, 30, 31,
+        30, 29, 31,
         30, 31, 32,
-        31, 32, 1,
-        32, 1, 0,
+        32, 31, 1,
+        32, 0, 1,
     ];
     geometry.setIndex(indices);
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.computeVertexNormals();
 
     mobiusStripMesh = new THREE.Mesh(geometry, mobiusStripMaterial);
     mobiusStripMesh.position.set(x, y, z);
@@ -292,7 +293,7 @@ function createInnerRing(obj, x, y, z) {
     'use strict';
 
     innerRing = new THREE.Object3D();
-    innerRing.userData = { verticalSpeed: 2 }
+    innerRing.userData = { verticalSpeed: 4 }
     addRing(innerRing, 0, 0, 0, outerR_ring1, innerR_ring1, h_ring, innerRingMaterial, innerRingMesh);
     innerRing.rotation.x = Math.PI / 2;
     innerRing.position.set(x, y, z);
@@ -306,7 +307,7 @@ function createMiddleRing(obj, x, y, z) {
     'use strict';
 
     middleRing = new THREE.Object3D();
-    middleRing.userData = { verticalSpeed: 2 }
+    middleRing.userData = { verticalSpeed: 3 }
     addRing(middleRing, 0, 0, 0, outerR_ring2, innerR_ring2, h_ring, middleRingMaterial, middleRingMesh);
     middleRing.rotation.x  = Math.PI / 2;
     middleRing.position.set(x, y, z);
@@ -504,11 +505,10 @@ function update(){
 
     // inner ring movement
     if (moveInnerRing && !innerRingDown) {
-        if (innerRing.position.y > h_cylinder) {
+        if (innerRing.position.y > h_cylinder/2) {
             inc = innerRing.userData.verticalSpeed * timeElapsed;
             innerRing.position.y -= inc
         } else {
-            moveInnerRing = false;
             innerRingDown = true;
         }
     } else if (moveInnerRing && innerRingDown) {
@@ -516,18 +516,16 @@ function update(){
             inc = innerRing.userData.verticalSpeed * timeElapsed;
             innerRing.position.y += inc
         } else {
-            moveInnerRing = false;
             innerRingDown = false;
         }
     }
 
     // middle ring movement
     if (moveMiddleRing && !middleRingDown) {
-        if (middleRing.position.y > h_cylinder) {
+        if (middleRing.position.y > h_cylinder/2) {
             inc = middleRing.userData.verticalSpeed * timeElapsed;
             middleRing.position.y -= inc
         } else {
-            moveMiddleRing = false;
             middleRingDown = true;
         }
     } else if (moveMiddleRing && middleRingDown) {
@@ -535,18 +533,16 @@ function update(){
             inc = middleRing.userData.verticalSpeed * timeElapsed;
             middleRing.position.y += inc
         } else {
-            moveMiddleRing = false;
             middleRingDown = false;
         }
     }
 
     // outer ring movement
     if (moveOuterRing && !outerRingDown) {
-        if (outerRing.position.y > h_cylinder) {
+        if (outerRing.position.y > h_cylinder/2) {
             inc = outerRing.userData.verticalSpeed * timeElapsed;
             outerRing.position.y -= inc
         } else {
-            moveOuterRing = false;
             outerRingDown = true;
         }
     } else if (moveOuterRing && outerRingDown) {
@@ -554,7 +550,6 @@ function update(){
             inc = outerRing.userData.verticalSpeed * timeElapsed;
             outerRing.position.y += inc
         } else {
-            moveOuterRing = false;
             outerRingDown = false;
         }
     }
@@ -574,27 +569,23 @@ function render() {
 function init() {
     'use strict';
     renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
+
     clock = new THREE.Clock();
 
-    /* Ponto 8
-    document.body.appendChild(VRButton.createButton(renderer));
     renderer.xr.enabled = true;
-    renderer.setAnimationLoop( function () {
-        renderer.render(scene, camera);
-    } );
-    createStereoCamera();
-    */
-
+    document.body.appendChild(VRButton.createButton(renderer));
+    
     createScene();
     createPerspectiveCamera();
+    createStereoCamera();
 
     const controls = new OrbitControls(perspectiveCamera, renderer.domElement);
 
     window.addEventListener("resize", onResize);
     window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("keyup", onKeyUp);
 }
 
 /////////////////////
@@ -606,7 +597,7 @@ function animate() {
     update();
     render();
 
-    requestAnimationFrame(animate);
+    renderer.setAnimationLoop(animate);
 }
 
 ////////////////////////////
@@ -638,10 +629,6 @@ function onKeyDown(e) {
             break;
         case 51: // 3
             moveOuterRing = !moveOuterRing;
-            break;
-        // remover tecla 7 depois
-        case 55: // 7
-            mobiusStripMaterial.wireframe = !mobiusStripMaterial.wireframe;
             break;
         case 68: // D/d
             directionalLight.visible = !directionalLight.visible;
@@ -752,15 +739,6 @@ function onKeyDown(e) {
 ///////////////////////
 function onKeyUp(e){
     'use strict';
-
-    switch(e.keyCode) {
-        case 49: // 1
-            break;
-        case 50: // 2
-            break;
-        case 51: // 3
-            break;
-    }
 }
 
 init();

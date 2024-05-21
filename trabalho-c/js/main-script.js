@@ -15,7 +15,6 @@ let scene, renderer, clock;
 
 // Meshes
 const meshes = [];
-const seatMeshes = [];
 let mobiusStripMesh;
 
 // Materials
@@ -484,10 +483,11 @@ function addSeats(obj, x, y, z, R_ring){
         mesh.userData.rotationSpeed = 0.005;
         mesh.userData.rotateAxis = new THREE.Vector3(Math.random() * 0.1 + 1, 1, 0).normalize();
         mesh.userData.originalColor = seatMaterial.color.clone();
+        mesh.name = "seat";
 
         mesh.position.set(x, y, z);
         mesh.rotation.x = - Math.PI/2;
-        seatMeshes.push(mesh);
+        meshes.push(mesh);
         
         createSpotLight(obj, mesh, x, y, 0);
         
@@ -520,8 +520,10 @@ function update(){
     let inc = carousel.userData.rotationSpeed * timeElapsed;
     carousel.rotateY(inc);
 
-    seatMeshes.forEach(mesh => {
-        mesh.rotateOnAxis(mesh.userData.rotateAxis, mesh.userData.rotationSpeed);
+    meshes.forEach(mesh => {
+        if (mesh.name === "seat"){
+            mesh.rotateOnAxis(mesh.userData.rotateAxis, mesh.userData.rotationSpeed);
+        }
     });
 
     // inner ring movement
@@ -675,11 +677,6 @@ function onKeyDown(e) {
                 lambertMaterial = new THREE.MeshLambertMaterial({ color: newColor, side: THREE.DoubleSide });
                 mesh.material = lambertMaterial;
             });
-            seatMeshes.forEach(smesh => {
-                newColor = smesh.userData.originalColor.clone();
-                lambertMaterial = new THREE.MeshLambertMaterial({ color: newColor, side: THREE.DoubleSide });
-                smesh.material = lambertMaterial;
-            });
             newColor = mobiusStripMesh.userData.originalColor.clone();
             lambertMaterial = new THREE.MeshLambertMaterial({ color: newColor, side: THREE.DoubleSide });
             mobiusStripMesh.material = lambertMaterial;
@@ -692,11 +689,6 @@ function onKeyDown(e) {
                 newColor = mesh.userData.originalColor.clone()
                 phongMaterial = new THREE.MeshPhongMaterial({ color: newColor, side: THREE.DoubleSide});
                 mesh.material = phongMaterial;
-            });
-            seatMeshes.forEach(smesh => {
-                newColor = smesh.userData.originalColor.clone();
-                phongMaterial = new THREE.MeshPhongMaterial({ color: newColor, side: THREE.DoubleSide });
-                smesh.material = phongMaterial;
             });
             newColor = mobiusStripMesh.userData.originalColor.clone()
             phongMaterial = new THREE.MeshPhongMaterial({ color: newColor, side: THREE.DoubleSide});
@@ -711,11 +703,6 @@ function onKeyDown(e) {
                 toonMaterial = new THREE.MeshToonMaterial({ color: newColor, side: THREE.DoubleSide});
                 mesh.material = toonMaterial;
             });
-            seatMeshes.forEach(smesh => {
-                newColor = smesh.userData.originalColor.clone();
-                toonMaterial = new THREE.MeshToonMaterial({ color: newColor, side: THREE.DoubleSide});
-                smesh.material = toonMaterial;
-            });
             newColor = mobiusStripMesh.userData.originalColor.clone();
             toonMaterial = new THREE.MeshToonMaterial({ color: newColor, side: THREE.DoubleSide});
             mobiusStripMesh.material = toonMaterial;
@@ -726,10 +713,6 @@ function onKeyDown(e) {
             meshes.forEach(mesh => {
                 normalMaterial = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
                 mesh.material = normalMaterial;
-            });
-            seatMeshes.forEach(smesh => {
-                normalMaterial = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
-                smesh.material = normalMaterial;
             });
             normalMaterial = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
             mobiusStripMesh.material = normalMaterial;
@@ -744,11 +727,6 @@ function onKeyDown(e) {
                     basicMaterial = new THREE.MeshBasicMaterial({ color: newColor, side: THREE.DoubleSide});
                     mesh.material = basicMaterial;
                 })
-                seatMeshes.forEach(smesh => {
-                    newColor = smesh.userData.originalColor.clone()
-                    basicMaterial = new THREE.MeshBasicMaterial({ color: newColor, side: THREE.DoubleSide});
-                    smesh.material = basicMaterial;
-                })
                 newColor = mobiusStripMesh.userData.originalColor.clone()
                 basicMaterial = new THREE.MeshBasicMaterial({ color: newColor, side: THREE.DoubleSide});
                 mobiusStripMesh.material = basicMaterial;
@@ -761,13 +739,6 @@ function onKeyDown(e) {
                     newMaterial.color = newColor;
                     newMaterial.side = THREE.DoubleSide;
                     mesh.material = newMaterial;
-                })
-                seatMeshes.forEach(smesh => {
-                    newColor = smesh.userData.originalColor.clone()
-                    let newMaterial = currentMaterial.clone();
-                    newMaterial.color = newColor;
-                    newMaterial.side = THREE.DoubleSide;
-                    smesh.material = newMaterial;
                 })
                 newColor = mobiusStripMesh.userData.originalColor.clone()
                 let newMaterial = currentMaterial.clone();

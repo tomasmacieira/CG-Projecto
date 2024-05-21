@@ -413,15 +413,18 @@ function createSeatGeometries(){
         target.set(x, y, z);
     });
 
-    // Cone Inclinado
-    geometries.push(function inclinedCone(u, v, target) {
-        const r = 2;
-        const h = 6;
-    
-        const x = (1 - u) * r * Math.cos(v * 2 * Math.PI);
-        const y = h * (u - 0.5);
-        const z = (1 - u) * r * Math.sin(v * 2 * Math.PI) + 2 * u;
-    
+    // Toroide
+    geometries.push(function torus(u, v, target) {
+        const R = 3;
+        const r = 0.75;
+
+        u *= 2 * Math.PI;
+        v *= 2 * Math.PI;
+
+        const x = (R + r * Math.cos(v)) * Math.cos(u);
+        const y = (R + r * Math.cos(v)) * Math.sin(u);
+        const z = r * Math.sin(v);
+
         target.set(x, y, z);
     });
 
@@ -441,6 +444,34 @@ function createSeatGeometries(){
         target.set(x, y, z);
     });
 
+    // Cone Inclinado
+    geometries.push(function inclinedCone(u, v, target) {
+        const r = 2;
+        const h = 6;
+    
+        const x = (1 - u) * r * Math.cos(v * 2 * Math.PI);
+        const y = h * (u - 0.5);
+        const z = (1 - u) * r * Math.sin(v * 2 * Math.PI) + 2 * u;
+    
+        target.set(x, y, z);
+    });
+
+    // Parábola
+    geometries.push(function paraboloid(u, v, target) {
+        const a = 1.5;
+        const b = 1.5;
+        const c = 1.5;
+
+        u = (u - 0.5) * 2;
+        v = (v - 0.5) * 2;
+
+        const x = a * u;
+        const y = b * v;
+        const z = c * (u * u + v * v);
+
+        target.set(x, y, z);
+    });
+
     return geometries;
 }
 
@@ -455,13 +486,13 @@ function addSeats(obj, x, y, z, R_ring){
         const angle = i * angleIncrement * (Math.PI / 180);
         x = R_ring * Math.cos(angle);
         y = R_ring * Math.sin(angle);
-        z = - 6;
+        z = -6;
 
         geometry = new ParametricGeometry(seatFunctions[i], 50, 50);
         mesh = new THREE.Mesh(geometry, seatMaterial);
 
         mesh.userData.rotationSpeed = 0.005;
-        mesh.userData.rotateAxis = new THREE.Vector3(Math.random() * 1, 1, 0);
+        mesh.userData.rotateAxis = new THREE.Vector3(Math.random() * 0.1 + 1, 1, 0).normalize();
         mesh.userData.originalColor = seatMaterial.color.clone();
 
         mesh.position.set(x, y, z);
@@ -692,11 +723,11 @@ function onKeyDown(e) {
             break;
         case 82: // R/r
             meshes.forEach(mesh => {
-                normalMaterial = new THREE.MeshNormalMaterial();
+                normalMaterial = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
                 mesh.material = normalMaterial;
             });
             seatMeshes.forEach(smesh => {
-                normalMaterial = new THREE.MeshNormalMaterial();
+                normalMaterial = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
                 smesh.material = normalMaterial;
             });
             reactingToLight = true;

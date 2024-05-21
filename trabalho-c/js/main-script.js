@@ -275,6 +275,7 @@ function addMobiusStrip(obj, x, y, z) {
     geometry.computeVertexNormals();
 
     mobiusStripMesh = new THREE.Mesh(geometry, mobiusStripMaterial);
+    mobiusStripMesh.userData.originalColor = mobiusStripMaterial.color.clone();
     mobiusStripMesh.position.set(x, y, z);
     obj.add(mobiusStripMesh);
 }
@@ -756,8 +757,11 @@ function onKeyDown(e) {
 
                 reactingToLight = false;
             } else {
-                // TODO: a mobius strip não volta ao material normal
                 // TODO: fazer T logo que se inicia a animação faz com que as superfícies deixem de ter double side acho eu
+                newColor = mobiusStripMesh.userData.originalColor.clone();
+                let newStripMaterial =  currentMaterial.clone();
+                newStripMaterial.color = newColor;
+                mobiusStripMesh.material = newStripMaterial;
                 meshes.forEach(mesh => {
                     newColor = mesh.userData.originalColor.clone();
                     let newMaterial = currentMaterial.clone();

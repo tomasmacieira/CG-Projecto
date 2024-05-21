@@ -10,34 +10,32 @@ import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.j
 //////////////////////
 
 // Cameras, scene, renderer and clock
-var perspectiveCamera, stereoCamera;
-var scene, renderer, clock;
+let perspectiveCamera, stereoCamera;
+let scene, renderer, clock;
 
 // Meshes
 const meshes = [];
 const seatMeshes = [];
-var mesh, cylinderMesh, mobiusStripMesh, innerRingMesh, middleRingMesh, outerRingMesh, skydomeMesh;
+let mobiusStripMesh;
 
 // Materials
-var geometry;
-var carouselMaterial, skydomeMaterial, mobiusStripMaterial;
-var lambertMaterial, phongMaterial, toonMaterial, normalMaterial, basicMaterial, currentMaterial;
-var innerRingMaterial, middleRingMaterial, outerRingMaterial, seatMaterial;
+let carouselMaterial, skydomeMaterial, innerRingMaterial, middleRingMaterial, outerRingMaterial, seatMaterial, mobiusStripMaterial;
+let lambertMaterial, phongMaterial, toonMaterial, normalMaterial, basicMaterial, currentMaterial;
 
 // Object3Ds
-var carousel, innerRing, middleRing, outerRing;
+let carousel, innerRing, middleRing, outerRing;
 
 // Lights
 const pointLights = [];
 const spotLights = [];
-var directionalLight, ambientLight;
-var reactingToLight = false;
+let directionalLight, ambientLight;
+let reactingToLight = false;
 
 // Colors
-var newColor;
+let newColor;
 
 // Measurements
-// L: width, h: height, c: length, r: radius
+// h: height, r: radius
 const r_cylinder = 6;
 const h_cylinder = 20;
 
@@ -46,22 +44,22 @@ const h_strip = 21;
 
 const h_ring = 5;
 
-const outerR_ring1 = 20;
 const innerR_ring1 = 6;
+const outerR_ring1 = 20;
 
-const outerR_ring2 = 34;
 const innerR_ring2 = outerR_ring1;
+const outerR_ring2 = 34;
 
-const outerR_ring3 = 48;
 const innerR_ring3 = outerR_ring2;
+const outerR_ring3 = 48;
 
 // Rings movement
-var moveInnerRing = true;
-var innerRingDown = false;
-var moveMiddleRing = true;
-var middleRingDown = false;
-var moveOuterRing = true;
-var outerRingDown = false;
+let moveInnerRing = true;
+let innerRingDown = false;
+let moveMiddleRing = true;
+let middleRingDown = false;
+let moveOuterRing = true;
+let outerRingDown = false;
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -85,13 +83,13 @@ function createScene(){
 
 function createMaterials() {
     currentMaterial = new THREE.MeshBasicMaterial();
-    carouselMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C, wireframe: false });
-    innerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xDD761C, wireframe: false });
-    middleRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFEB941, wireframe: false });
-    outerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFDE49E, wireframe: false });
+    carouselMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C});
+    innerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xDD761C});
+    middleRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFEB941});
+    outerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFDE49E});
     skydomeMaterial = new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/an_optical_poem.jpg'), side: THREE.DoubleSide, transparent: true, opacity: 0.7});
-    seatMaterial = new THREE.MeshBasicMaterial({ color: 0xB95743, wireframe: false, side: THREE.DoubleSide});
-    mobiusStripMaterial = new THREE.MeshLambertMaterial({ color: 0xEABE6C, side: THREE.DoubleSide, wireframe: false });
+    seatMaterial = new THREE.MeshBasicMaterial({ color: 0xB95743, side: THREE.DoubleSide});
+    mobiusStripMaterial = new THREE.MeshBasicMaterial({ color: 0xBE4D25, side: THREE.DoubleSide});
 }
 
 //////////////////////
@@ -153,10 +151,9 @@ function createSpotLight(obj, mesh, x, y, z) {
 function addSkydome(x, y, z){
     'use strict';
     //SphereGeometry(radius, widthSegments, heightSegments)
-    geometry = new THREE.SphereGeometry(r_skydome, 64, 32, 0, 2 * Math.PI, 0, Math.PI / 2);
-    skydomeMesh = new THREE.Mesh(geometry, skydomeMaterial);
+    let geometry = new THREE.SphereGeometry(r_skydome, 64, 32, 0, 2 * Math.PI, 0, Math.PI / 2);
+    let skydomeMesh = new THREE.Mesh(geometry, skydomeMaterial);
     skydomeMesh.position.set(x, y, z);
-
     scene.add(skydomeMesh);
 }
 
@@ -189,8 +186,8 @@ function createCarousel(x, y, z) {
 function addCentralCylinder(obj, x, y, z, r, h) {
     'use strict';
     // CylinderGeometry(radiusTop, radiusBottom, height, radialSegments)
-    geometry = new THREE.CylinderGeometry(r, r, h, 64);
-    cylinderMesh = new THREE.Mesh(geometry, carouselMaterial);
+    let geometry = new THREE.CylinderGeometry(r, r, h, 64);
+    let cylinderMesh = new THREE.Mesh(geometry, carouselMaterial);
     cylinderMesh.userData.originalColor = carouselMaterial.color.clone();
     meshes.push(cylinderMesh);
     cylinderMesh.position.set(x, y, z);
@@ -199,7 +196,7 @@ function addCentralCylinder(obj, x, y, z, r, h) {
 
 function addMobiusStrip(obj, x, y, z) {
     'use strict';
-    geometry = new THREE.BufferGeometry();
+    let geometry = new THREE.BufferGeometry();
     const vertices = new Float32Array( [
         0.6, 2.0,  1.8, // v0
         1.0, -2.0, 2.0, // v1
@@ -286,7 +283,7 @@ function createInnerRing(obj, x, y, z) {
 
     innerRing = new THREE.Object3D();
     innerRing.userData = { verticalSpeed: 4 }
-    addRing(innerRing, 0, 0, 0, outerR_ring1, innerR_ring1, h_ring, innerRingMaterial, innerRingMesh);
+    addRing(innerRing, 0, 0, 0, outerR_ring1, innerR_ring1, h_ring, innerRingMaterial);
     innerRing.rotation.x = Math.PI / 2;
     innerRing.position.set(x, y, z);
 
@@ -300,7 +297,7 @@ function createMiddleRing(obj, x, y, z) {
 
     middleRing = new THREE.Object3D();
     middleRing.userData = { verticalSpeed: 3 }
-    addRing(middleRing, 0, 0, 0, outerR_ring2, innerR_ring2, h_ring, middleRingMaterial, middleRingMesh);
+    addRing(middleRing, 0, 0, 0, outerR_ring2, innerR_ring2, h_ring, middleRingMaterial);
     middleRing.rotation.x  = Math.PI / 2;
     middleRing.position.set(x, y, z);
 
@@ -315,7 +312,7 @@ function createOuterRing(obj, x, y, z) {
 
     outerRing = new THREE.Object3D();
     outerRing.userData = { verticalSpeed: 2 }
-    addRing(outerRing, 0, 0, 0, outerR_ring3, innerR_ring3, h_ring, outerRingMaterial, outerRingMesh)
+    addRing(outerRing, 0, 0, 0, outerR_ring3, innerR_ring3, h_ring, outerRingMaterial)
     outerRing.rotation.x  = Math.PI / 2;
     outerRing.position.set(x, y, z);
 
@@ -324,13 +321,13 @@ function createOuterRing(obj, x, y, z) {
     obj.add(outerRing);
 }
 
-function addRing(obj, x, y, z, outerRadius, innerRadius, h, mat, mesh) {
+function addRing(obj, x, y, z, outerRadius, innerRadius, h, mat) {
     'use strict';
-    var shape = new THREE.Shape();
+    let shape = new THREE.Shape();
     shape.moveTo(outerRadius, 0);
     shape.absarc(0, 0, outerRadius, 0, Math.PI * 2, false);
     
-    var holePath = new THREE.Path();
+    let holePath = new THREE.Path();
     holePath.moveTo(innerRadius, 0);
     holePath.absarc(0, 0, innerRadius, 0, Math.PI * 2, true);
 
@@ -341,8 +338,8 @@ function addRing(obj, x, y, z, outerRadius, innerRadius, h, mat, mesh) {
         depth: h
     };
 
-    var ringGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-    mesh = new THREE.Mesh(ringGeometry, mat);
+    let ringGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    let mesh = new THREE.Mesh(ringGeometry, mat);
     mesh.userData.originalColor = mat.color.clone();
     meshes.push(mesh);
     mesh.position.set(x, y, z);
@@ -480,8 +477,8 @@ function addSeats(obj, x, y, z, R_ring){
         y = R_ring * Math.sin(angle);
         z = -6;
 
-        geometry = new ParametricGeometry(seatFunctions[i], 50, 50);
-        mesh = new THREE.Mesh(geometry, seatMaterial);
+        let geometry = new ParametricGeometry(seatFunctions[i], 50, 50);
+        let mesh = new THREE.Mesh(geometry, seatMaterial);
 
         mesh.userData.rotationSpeed = 0.005;
         mesh.userData.rotateAxis = new THREE.Vector3(Math.random() * 0.1 + 1, 1, 0).normalize();
@@ -757,26 +754,24 @@ function onKeyDown(e) {
 
                 reactingToLight = false;
             } else {
-                // TODO: fazer T logo que se inicia a animação faz com que as superfícies deixem de ter double side acho eu
-                newColor = mobiusStripMesh.userData.originalColor.clone();
-                let newStripMaterial =  currentMaterial.clone();
-                newStripMaterial.color = newColor;
-                mobiusStripMesh.material = newStripMaterial;
                 meshes.forEach(mesh => {
                     newColor = mesh.userData.originalColor.clone();
                     let newMaterial = currentMaterial.clone();
                     newMaterial.color = newColor;
+                    newMaterial.side = THREE.DoubleSide;
                     mesh.material = newMaterial;
                 })
                 seatMeshes.forEach(smesh => {
                     newColor = smesh.userData.originalColor.clone()
                     let newMaterial = currentMaterial.clone();
                     newMaterial.color = newColor;
+                    newMaterial.side = THREE.DoubleSide;
                     smesh.material = newMaterial;
                 })
                 newColor = mobiusStripMesh.userData.originalColor.clone()
                 let newMaterial = currentMaterial.clone();
                 newMaterial.color = newColor;
+                newMaterial.side = THREE.DoubleSide;
                 mobiusStripMesh.material = newMaterial;
 
                 reactingToLight = true;

@@ -30,8 +30,7 @@ var carousel, innerRing, middleRing, outerRing;
 // Lights
 const pointLights = [];
 const spotLights = [];
-var light1, light2, light3, light4, light5, light6, light7, light8;
-var directionalLight, ambientLight, spotLight;
+var directionalLight, ambientLight;
 var reactingToLight = false;
 
 // Colors
@@ -71,16 +70,9 @@ function createScene(){
     'use strict';
 
     scene = new THREE.Scene();
-    scene.add(new THREE.AxesHelper(10));
     scene.background = new THREE.Color(0xb8cef2);
-
-    let floor = new THREE.Mesh(new THREE.BoxGeometry(200, 200, 0.5), new THREE.MeshBasicMaterial({color: 0x6DC5D1, side: THREE.DoubleSide}));
-    floor.rotateX(-Math.PI/2);
-    floor.position.y = -1;
+    let floor = new THREE.Mesh(new THREE.CylinderGeometry(r_skydome, r_skydome, 0.5), new THREE.MeshBasicMaterial({color: 0x383eae, side: THREE.DoubleSide}));
     scene.add(floor);
-
-    const axesHelper = new THREE.AxesHelper(5);
-    scene.add(axesHelper);
 
     createDirectionalLight();
     createAmbientLight();
@@ -88,7 +80,6 @@ function createScene(){
     createMaterials();
 
     addSkydome(0, 0, 0);
-
     createCarousel(0, 0, 0);
 }
 
@@ -137,15 +128,15 @@ function createAmbientLight() {
     scene.add(ambientLight);
 }
 
-function createPointLight(x, y, z, light) {
-    light = new THREE.PointLight( 0xff0000, 10, 300 );
+function createPointLight(x, y, z) {
+    let light = new THREE.PointLight( 0xdddddd, 10, 300 );
     light.position.set(x, y, z);
     scene.add(light);
     pointLights.push(light);
 }
 
 function createSpotLight(obj, mesh, x, y, z) {
-    spotLight = new THREE.SpotLight(0xFFFFFF, 200);
+    let spotLight = new THREE.SpotLight(0xFFFFFF, 200);
     spotLight.position.set(x, y, z);
     spotLight.target = mesh;
     spotLight.angle = 0.7;
@@ -178,14 +169,14 @@ function createCarousel(x, y, z) {
     addCentralCylinder(carousel, 0, h_cylinder/2, 0, r_cylinder, h_cylinder);
     addMobiusStrip(carousel, 0, h_cylinder + h_strip, 0);
     
-    createPointLight(0.6, h_cylinder + h_strip + 2.0, 1.8, light1);
-    createPointLight(-1.4, h_cylinder + h_strip + 2.0, 2.0, light2);
-    createPointLight(-4.2, h_cylinder + h_strip + 2.2, 1.6, light3);
-    createPointLight(-4.4, h_cylinder + h_strip + 3.0, -2.4, light4);
-    createPointLight(-2.6, h_cylinder + h_strip + 3.2, -2.4, light5);
-    createPointLight(-0.4, h_cylinder + h_strip + 0.6, -1.0, light6);
-    createPointLight(1.4, h_cylinder + h_strip - 1.0, -0.6, light7);
-    createPointLight(3.4, h_cylinder + h_strip - 2.6, -0.2, light8);
+    createPointLight(0.6, h_cylinder + h_strip + 2.0, 1.8);
+    createPointLight(-1.4, h_cylinder + h_strip + 2.0, 2.0);
+    createPointLight(-4.2, h_cylinder + h_strip + 2.2, 1.6);
+    createPointLight(-4.4, h_cylinder + h_strip + 3.0, -2.4);
+    createPointLight(-2.6, h_cylinder + h_strip + 3.2, -2.4);
+    createPointLight(-0.4, h_cylinder + h_strip + 0.6, -1.0);
+    createPointLight(1.4, h_cylinder + h_strip - 1.0, -0.6);
+    createPointLight(3.4, h_cylinder + h_strip - 2.6, -0.2);
     
     scene.add(carousel);
     carousel.position.set(x, y, z);
@@ -690,6 +681,10 @@ function onKeyDown(e) {
                 lambertMaterial = new THREE.MeshLambertMaterial({ color: newColor, side: THREE.DoubleSide });
                 smesh.material = lambertMaterial;
             });
+            newColor = mobiusStripMesh.userData.originalColor.clone();
+            lambertMaterial = new THREE.MeshLambertMaterial({ color: newColor, side: THREE.DoubleSide });
+            mobiusStripMesh.material = lambertMaterial;
+
             reactingToLight = true;
             currentMaterial = lambertMaterial;
             break;
@@ -704,6 +699,10 @@ function onKeyDown(e) {
                 phongMaterial = new THREE.MeshPhongMaterial({ color: newColor, side: THREE.DoubleSide });
                 smesh.material = phongMaterial;
             });
+            newColor = mobiusStripMesh.userData.originalColor.clone()
+            phongMaterial = new THREE.MeshPhongMaterial({ color: newColor, side: THREE.DoubleSide});
+            mobiusStripMesh.material = phongMaterial;
+
             reactingToLight = true;
             currentMaterial = phongMaterial;
             break;
@@ -718,6 +717,9 @@ function onKeyDown(e) {
                 toonMaterial = new THREE.MeshToonMaterial({ color: newColor, side: THREE.DoubleSide});
                 smesh.material = toonMaterial;
             });
+            newColor = mobiusStripMesh.userData.originalColor.clone();
+            toonMaterial = new THREE.MeshToonMaterial({ color: newColor, side: THREE.DoubleSide});
+            mobiusStripMesh.material = toonMaterial;
             reactingToLight = true;
             currentMaterial = toonMaterial;
             break;
@@ -730,6 +732,9 @@ function onKeyDown(e) {
                 normalMaterial = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
                 smesh.material = normalMaterial;
             });
+            normalMaterial = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
+            mobiusStripMesh.material = normalMaterial;
+
             reactingToLight = true;
             currentMaterial = normalMaterial;
             break;
@@ -745,8 +750,14 @@ function onKeyDown(e) {
                     basicMaterial = new THREE.MeshBasicMaterial({ color: newColor, side: THREE.DoubleSide});
                     smesh.material = basicMaterial;
                 })
+                newColor = mobiusStripMesh.userData.originalColor.clone()
+                basicMaterial = new THREE.MeshBasicMaterial({ color: newColor, side: THREE.DoubleSide});
+                mobiusStripMesh.material = basicMaterial;
+
                 reactingToLight = false;
             } else {
+                // TODO: a mobius strip não volta ao material normal
+                // TODO: fazer T logo que se inicia a animação faz com que as superfícies deixem de ter double side acho eu
                 meshes.forEach(mesh => {
                     newColor = mesh.userData.originalColor.clone();
                     let newMaterial = currentMaterial.clone();
@@ -759,6 +770,11 @@ function onKeyDown(e) {
                     newMaterial.color = newColor;
                     smesh.material = newMaterial;
                 })
+                newColor = mobiusStripMesh.userData.originalColor.clone()
+                let newMaterial = currentMaterial.clone();
+                newMaterial.color = newColor;
+                mobiusStripMesh.material = newMaterial;
+
                 reactingToLight = true;
             }
             break;

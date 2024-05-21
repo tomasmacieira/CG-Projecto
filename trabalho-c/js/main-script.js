@@ -87,7 +87,8 @@ function createMaterials() {
     innerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xDD761C});
     middleRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFEB941});
     outerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFDE49E});
-    skydomeMaterial = new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/an_optical_poem.jpg'), side: THREE.DoubleSide, transparent: true, opacity: 0.7});
+    skydomeMaterial = new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/an_optical_poem.jpg'),
+                            side: THREE.DoubleSide, transparent: true, opacity: 0.7});
     seatMaterial = new THREE.MeshBasicMaterial({ color: 0xB95743, side: THREE.DoubleSide});
     mobiusStripMaterial = new THREE.MeshBasicMaterial({ color: 0xBE4D25, side: THREE.DoubleSide});
 }
@@ -127,7 +128,7 @@ function createAmbientLight() {
 }
 
 function createPointLight(x, y, z) {
-    let light = new THREE.PointLight( 0xdddddd, 10, 300 );
+    let light = new THREE.PointLight(0xFFFFFF, 10, 100);
     light.position.set(x, y, z);
     scene.add(light);
     pointLights.push(light);

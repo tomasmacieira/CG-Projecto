@@ -178,9 +178,13 @@ function createCarousel(x, y, z) {
     scene.add(carousel);
     carousel.position.set(x, y, z);
 
-    createInnerRing(carousel, 0, h_cylinder + h_ring, 0);
-    createMiddleRing(carousel, 0, h_cylinder + 2*h_ring, 0);
-    createOuterRing(carousel, 0, h_cylinder + 3*h_ring, 0);
+    //createInnerRing(carousel, 0, h_cylinder + h_ring, 0);
+    //createMiddleRing(carousel, 0, h_cylinder + 2*h_ring, 0);
+    //createOuterRing(carousel, 0, h_cylinder + 3*h_ring, 0);
+
+    innerRing = createCarouselRing(carousel, 0, h_cylinder + h_ring, 0, outerR_ring1, innerR_ring1, 4, innerRingMaterial);
+    middleRing = createCarouselRing(carousel, 0, h_cylinder + 2*h_ring, 0, outerR_ring2, innerR_ring2, 3, middleRingMaterial);
+    outerRing = createCarouselRing(carousel, 0, h_cylinder + 3*h_ring, 0, outerR_ring3, innerR_ring3, 2, outerRingMaterial);
 }
 
 function addCentralCylinder(obj, x, y, z, r, h) {
@@ -305,6 +309,22 @@ function createMiddleRing(obj, x, y, z) {
 
     obj.add(middleRing);
 
+}
+
+function createCarouselRing(obj, x, y, z, outerRadius, innerRadius, speed, material) {
+    'use strict';
+
+    let ring = new THREE.Object3D();
+    ring.userData = { verticalSpeed: speed };
+    addRing(ring, 0, 0, 0, outerRadius, innerRadius, h_ring, material);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.set(x, y, z);
+
+    addSeats(ring, 0, 0, 0, (outerRadius - innerR_ring1) - r_cylinder / 2);
+
+    obj.add(ring);
+
+    return ring;
 }
 
 function createOuterRing(obj, x, y, z) {

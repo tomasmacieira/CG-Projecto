@@ -166,14 +166,14 @@ function createCarousel(x, y, z) {
     addCentralCylinder(carousel, 0, h_cylinder/2, 0, r_cylinder, h_cylinder);
     addMobiusStrip(carousel, 0, h_cylinder + h_strip, 0);
     
-    createPointLight(0.6, h_cylinder + h_strip + 2.0, 1.8);
-    createPointLight(-1.4, h_cylinder + h_strip + 2.0, 2.0);
-    createPointLight(-4.2, h_cylinder + h_strip + 2.2, 1.6);
-    createPointLight(-4.4, h_cylinder + h_strip + 3.0, -2.4);
-    createPointLight(-2.6, h_cylinder + h_strip + 3.2, -2.4);
-    createPointLight(-0.4, h_cylinder + h_strip + 0.6, -1.0);
-    createPointLight(1.4, h_cylinder + h_strip - 1.0, -0.6);
-    createPointLight(3.4, h_cylinder + h_strip - 2.6, -0.2);
+    createPointLight(0.0, h_cylinder + h_strip, 2.6);
+    createPointLight(-4.0, h_cylinder + h_strip, 2.4);
+    createPointLight(-5.4, h_cylinder + h_strip, 0.0);
+    createPointLight(-4.0, h_cylinder + h_strip, -4.6);
+    createPointLight(0.0, h_cylinder + h_strip, -4.4);
+    createPointLight(3.8, h_cylinder + h_strip, -2.4);
+    createPointLight(4.0, h_cylinder + h_strip, 0.0);
+    createPointLight(3.6, h_cylinder + h_strip, 1.2);
     
     scene.add(carousel);
     carousel.position.set(x, y, z);
@@ -269,7 +269,7 @@ function addMobiusStrip(obj, x, y, z) {
         30, 29, 31,
         30, 31, 32,
         32, 31, 1,
-        32, 0, 1,
+        32, 1, 0,
     ];
     geometry.setIndex(indices);
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));

@@ -15,11 +15,9 @@ let scene, renderer, clock;
 
 // Meshes
 const meshes = [];
-let mobiusStripMesh;
 
 // Materials
-let /*carouselMaterial,*/ skydomeMaterial/* innerRingMaterial, middleRingMaterial, outerRingMaterial, seatMaterial, mobiusStripMaterial*/;
-let /*lambertMaterial, phongMaterial, toonMaterial, basicMaterial,*/normalMaterial, currentMaterial;
+let normalMaterial, skydomeMaterial;
 
 const previousMaterials = new Map();
 const carouselMaterial = 0;     // IDX 0 - CarouselMaterial
@@ -29,12 +27,11 @@ const outerRingMaterial = 3;    // IDX 3 - OuterRingMaterial
 const mobiusStripMaterial = 4;  // IDX 4 - MobiusStringMaterial
 const seatMaterial = 5;         // IDX 5 - SeatsMaterial
 
-const lambertMaterials = [];    
-const phongMaterials = [];      
-const toonMaterials = [];       
-const basicMaterials = [];      
-                               
-                                
+const lambertMaterials = [];
+const phongMaterials = [];
+const toonMaterials = [];
+const basicMaterials = [];
+
 // Object3Ds
 let carousel, innerRing, middleRing, outerRing;
 
@@ -43,9 +40,6 @@ const pointLights = [];
 const spotLights = [];
 let directionalLight, ambientLight;
 let reactingToLight = false;
-
-// Colors
-let newColor;
 
 // Measurements
 // h: height, r: radius
@@ -96,15 +90,8 @@ function createScene(){
 }
 
 function createMaterials() {
-    currentMaterial = new THREE.MeshBasicMaterial();
-    //carouselMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C});
-    //innerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xf9cb9c});
-    //middleRingMaterial = new THREE.MeshBasicMaterial({ color: 0xf6b26b});
-    //outerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xe69138});
     skydomeMaterial = new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/an_optical_poem.jpg'),
                             side: THREE.DoubleSide, transparent: true, opacity: 0.7});
-    //seatMaterial = new THREE.MeshBasicMaterial({ color: 0x741b47, side: THREE.DoubleSide});
-    //mobiusStripMaterial = new THREE.MeshBasicMaterial({ color: 0xBE4D25, side: THREE.DoubleSide});
 
     lambertMaterials.push(new THREE.MeshLambertMaterial({ color: 0xEABE6C, side: THREE.DoubleSide }));
     lambertMaterials.push(new THREE.MeshLambertMaterial({ color: 0xf9cb9c, side: THREE.DoubleSide }));
@@ -178,7 +165,6 @@ function createSpotLight(obj, mesh, x, y, z) {
     spotLight.target = mesh;
     spotLight.angle = 0.7;
 	spotLight.distance = 10;
-    spotLight.visible = false;
 
     obj.add(spotLight);
     spotLights.push(spotLight);
@@ -216,10 +202,6 @@ function createCarousel(x, y, z) {
     
     scene.add(carousel);
     carousel.position.set(x, y, z);
-
-    //createInnerRing(carousel, 0, h_cylinder + h_ring, 0);
-    //createMiddleRing(carousel, 0, h_cylinder + 2*h_ring, 0);
-    //createOuterRing(carousel, 0, h_cylinder + 3*h_ring, 0);
 
     innerRing = createCarouselRing(carousel, 0, h_cylinder + h_ring, 0, outerR_ring1, innerR_ring1, 4, basicMaterials[innerRingMaterial], 1);
     middleRing = createCarouselRing(carousel, 0, h_cylinder + 2*h_ring, 0, outerR_ring2, innerR_ring2, 3, basicMaterials[middleRingMaterial], 2);
@@ -314,41 +296,11 @@ function addMobiusStrip(obj, x, y, z) {
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geometry.computeVertexNormals();
 
-    mobiusStripMesh = new THREE.Mesh(geometry, basicMaterials[mobiusStripMaterial]);
+    let mobiusStripMesh = new THREE.Mesh(geometry, basicMaterials[mobiusStripMaterial]);
     mobiusStripMesh.userData.index = 4;
     mobiusStripMesh.position.set(x, y, z);
     meshes.push(mobiusStripMesh);
     obj.add(mobiusStripMesh);
-}
-
-// podemos fazer um só metódo a partir destas 3?
-function createInnerRing(obj, x, y, z) {
-    'use strict';
-
-    innerRing = new THREE.Object3D();
-    innerRing.userData = { verticalSpeed: 4 }
-    addRing(innerRing, 0, 0, 0, outerR_ring1, innerR_ring1, h_ring, innerRingMaterial);
-    innerRing.rotation.x = Math.PI / 2;
-    innerRing.position.set(x, y, z);
-
-    addSeats(innerRing, 0, 0, 0, (outerR_ring1-innerR_ring1) - r_cylinder/2);
-
-    obj.add(innerRing);
-}
-
-function createMiddleRing(obj, x, y, z) {
-    'use strict';
-
-    middleRing = new THREE.Object3D();
-    middleRing.userData = { verticalSpeed: 3 }
-    addRing(middleRing, 0, 0, 0, outerR_ring2, innerR_ring2, h_ring, middleRingMaterial);
-    middleRing.rotation.x  = Math.PI / 2;
-    middleRing.position.set(x, y, z);
-
-    addSeats(middleRing, 0, 0, 0, (outerR_ring2-innerR_ring1) - r_cylinder/2);
-
-    obj.add(middleRing);
-
 }
 
 function createCarouselRing(obj, x, y, z, outerRadius, innerRadius, speed, material, idx) {
@@ -365,20 +317,6 @@ function createCarouselRing(obj, x, y, z, outerRadius, innerRadius, speed, mater
     obj.add(ring);
 
     return ring;
-}
-
-function createOuterRing(obj, x, y, z) {
-    'use strict';
-
-    outerRing = new THREE.Object3D();
-    outerRing.userData = { verticalSpeed: 2 }
-    addRing(outerRing, 0, 0, 0, outerR_ring3, innerR_ring3, h_ring, outerRingMaterial)
-    outerRing.rotation.x  = Math.PI / 2;
-    outerRing.position.set(x, y, z);
-
-    addSeats(outerRing, 0, 0, 0, (outerR_ring3-innerR_ring1) - r_cylinder/2);
-
-    obj.add(outerRing);
 }
 
 function addRing(obj, x, y, z, outerRadius, innerRadius, h, mat, idx) {
@@ -744,35 +682,20 @@ function onKeyDown(e) {
 
             break;
         case 81: // Q/q
-            meshes.forEach(mesh => {
-                mesh.material = lambertMaterials[mesh.userData.index];
-            });
-
+            changeMeshesMaterial(lambertMaterials);
             reactingToLight = true;
-            currentMaterial = lambertMaterials;
             break;
         case 87: // W/w
-            meshes.forEach(mesh => {
-                mesh.material = phongMaterials[mesh.userData.index];
-            });
+            changeMeshesMaterial(phongMaterials);
             reactingToLight = true;
-            currentMaterial = phongMaterials;
             break;
         case 69: // E/e
-            meshes.forEach(mesh => {
-                mesh.material = toonMaterials[mesh.userData.index];
-            });
-
+            changeMeshesMaterial(toonMaterials);
             reactingToLight = true;
-            currentMaterial = toonMaterials;
             break;
         case 82: // R/r
-            meshes.forEach(mesh => {
-                mesh.material = normalMaterial;
-            });
-
+            changeMeshesMaterial([normalMaterial]);
             reactingToLight = true;
-            currentMaterial = [normalMaterial];
             break;
         case 84: // T/t
             if (reactingToLight) {
@@ -791,6 +714,18 @@ function onKeyDown(e) {
             }
             break;
     }
+}
+
+function changeMeshesMaterial(matArray) {
+    if (matArray[0] == normalMaterial) {
+        meshes.forEach(mesh => {
+            mesh.material = normalMaterial;
+        });
+        return;
+    }
+    meshes.forEach(mesh => {
+        mesh.material = matArray[mesh.userData.index];
+    });
 }
 
 ///////////////////////

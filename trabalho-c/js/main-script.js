@@ -666,10 +666,6 @@ function onKeyDown(e) {
         case 68: // D/d
             directionalLight.visible = !directionalLight.visible;
             break;
-        // remover tecla A depois
-        case 65: // A/a
-            ambientLight.visible = !ambientLight.visible;
-            break;
         case 80: // P/p
             pointLights.forEach(pointLight => {
                 pointLight.visible = !pointLight.visible;

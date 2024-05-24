@@ -91,6 +91,11 @@ function createMaterials() {
                             side: THREE.DoubleSide, transparent: true, opacity: 0.7});
     seatMaterial = new THREE.MeshBasicMaterial({ color: 0xB95743, side: THREE.DoubleSide});
     mobiusStripMaterial = new THREE.MeshBasicMaterial({ color: 0xBE4D25, side: THREE.DoubleSide});
+    lambertMaterial = new THREE.MeshLambertMaterial({ side: THREE.DoubleSide });
+    phongMaterial = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, specular: new THREE.Color(0xffffff), shininess: 30});
+    toonMaterial = new THREE.MeshToonMaterial({ side: THREE.DoubleSide});
+    basicMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide});
+    normalMaterial = new THREE.MeshNormalMaterial();
 }
 
 //////////////////////
@@ -688,28 +693,26 @@ function onKeyDown(e) {
         case 81: // Q/q
             meshes.forEach(mesh => {
                 newColor = mesh.userData.originalColor.clone()
-                lambertMaterial = new THREE.MeshLambertMaterial({ color: newColor, side: THREE.DoubleSide });
-                mesh.material = lambertMaterial;
+                mesh.material = lambertMaterial.clone();
+                mesh.material.color.copy(newColor);
             });
             newColor = mobiusStripMesh.userData.originalColor.clone();
-            lambertMaterial = new THREE.MeshLambertMaterial({ color: newColor, side: THREE.DoubleSide });
-            mobiusStripMesh.material = lambertMaterial;
+            mobiusStripMesh.material = lambertMaterial.clone();
+            mobiusStripMesh.material.color.copy(newColor);
 
             reactingToLight = true;
             currentMaterial = lambertMaterial;
             break;
         case 87: // W/w
             meshes.forEach(mesh => {
-                newColor = mesh.userData.originalColor.clone()
-                phongMaterial = new THREE.MeshPhongMaterial({ color: newColor, side: THREE.DoubleSide});
-                phongMaterial.specular = new THREE.Color(0xffffff);
-                phongMaterial.shininess = 30;
-                mesh.material = phongMaterial;
+                newColor = mesh.userData.originalColor.clone();
+                mesh.material = phongMaterial.clone();
+                mesh.material.color.copy(newColor);
 
             });
             newColor = mobiusStripMesh.userData.originalColor.clone()
-            phongMaterial = new THREE.MeshPhongMaterial({ color: newColor, side: THREE.DoubleSide});
-            mobiusStripMesh.material = phongMaterial;
+            mobiusStripMesh.material = phongMaterial.clone();
+            mobiusStripMesh.material.color.copy(newColor);
 
             reactingToLight = true;
             currentMaterial = phongMaterial;
@@ -717,22 +720,21 @@ function onKeyDown(e) {
         case 69: // E/e
             meshes.forEach(mesh => {
                 newColor = mesh.userData.originalColor.clone()
-                toonMaterial = new THREE.MeshToonMaterial({ color: newColor, side: THREE.DoubleSide});
-                mesh.material = toonMaterial;
+                mesh.material = toonMaterial.clone();
+                mesh.material.color.copy(newColor);
             });
             newColor = mobiusStripMesh.userData.originalColor.clone();
-            toonMaterial = new THREE.MeshToonMaterial({ color: newColor, side: THREE.DoubleSide});
             mobiusStripMesh.material = toonMaterial;
+            mobiusStripMesh.material.color.copy(newColor);
+
             reactingToLight = true;
             currentMaterial = toonMaterial;
             break;
         case 82: // R/r
             meshes.forEach(mesh => {
-                normalMaterial = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
-                mesh.material = normalMaterial;
+                mesh.material = normalMaterial.clone();
             });
-            normalMaterial = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
-            mobiusStripMesh.material = normalMaterial;
+            mobiusStripMesh.material = normalMaterial.clone();
 
             reactingToLight = true;
             currentMaterial = normalMaterial;
@@ -741,12 +743,12 @@ function onKeyDown(e) {
             if (reactingToLight) {
                 meshes.forEach(mesh => {
                     newColor = mesh.userData.originalColor.clone()
-                    basicMaterial = new THREE.MeshBasicMaterial({ color: newColor, side: THREE.DoubleSide});
-                    mesh.material = basicMaterial;
+                    mesh.material = basicMaterial.clone();
+                    mesh.material.color.copy(newColor);
                 })
                 newColor = mobiusStripMesh.userData.originalColor.clone()
-                basicMaterial = new THREE.MeshBasicMaterial({ color: newColor, side: THREE.DoubleSide});
-                mobiusStripMesh.material = basicMaterial;
+                mobiusStripMesh.material = basicMaterial.clone();
+                mobiusStripMesh.material.color.copy(newColor);
 
                 reactingToLight = false;
             } else {

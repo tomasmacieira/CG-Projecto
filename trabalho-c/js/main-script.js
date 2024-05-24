@@ -68,7 +68,7 @@ function createScene(){
 
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xb8cef2);
-    let floor = new THREE.Mesh(new THREE.CylinderGeometry(r_skydome, r_skydome, 0.5), new THREE.MeshBasicMaterial({color: 0x383eae, side: THREE.DoubleSide}));
+    let floor = new THREE.Mesh(new THREE.CylinderGeometry(r_skydome, r_skydome, 0.5), new THREE.MeshBasicMaterial({color: 0x102bb4, side: THREE.DoubleSide}));
     scene.add(floor);
     scene.position.set(0, -h_cylinder - 3*h_ring, 0)
 
@@ -84,12 +84,12 @@ function createScene(){
 function createMaterials() {
     currentMaterial = new THREE.MeshBasicMaterial();
     carouselMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C});
-    innerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xDD761C});
-    middleRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFEB941});
-    outerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xFDE49E});
+    innerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xf9cb9c});
+    middleRingMaterial = new THREE.MeshBasicMaterial({ color: 0xf6b26b});
+    outerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xe69138});
     skydomeMaterial = new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/an_optical_poem.jpg'),
                             side: THREE.DoubleSide, transparent: true, opacity: 0.7});
-    seatMaterial = new THREE.MeshBasicMaterial({ color: 0xB95743, side: THREE.DoubleSide});
+    seatMaterial = new THREE.MeshBasicMaterial({ color: 0x741b47, side: THREE.DoubleSide});
     mobiusStripMaterial = new THREE.MeshBasicMaterial({ color: 0xBE4D25, side: THREE.DoubleSide});
     lambertMaterial = new THREE.MeshLambertMaterial({ side: THREE.DoubleSide });
     phongMaterial = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, specular: new THREE.Color(0xffffff), shininess: 30});
@@ -122,7 +122,7 @@ function createDirectionalLight() {
 }
 
 function createAmbientLight() {
-    ambientLight = new THREE.AmbientLight(0xd7930a)
+    ambientLight = new THREE.AmbientLight(0xd7930a, 3);
     scene.add(ambientLight);
 }
 
@@ -370,10 +370,12 @@ function createSeatGeometries(){
 
     const geometries = [];
 
+    const scaleFactor = Math.random() * 0.2 + 0.9;
+
     // Esfera
     geometries.push(function sphere( u, v, target ) {
 
-        const r = 3.5;
+        const r = 3.5 * scaleFactor;
         u *= Math.PI;
         v *= 2 * Math.PI;
 
@@ -386,8 +388,8 @@ function createSeatGeometries(){
 
     // Cilindro
     geometries.push(function cylinder(u, v, target) {
-        const r = 2;
-        const h = 6;
+        const r = 2 * scaleFactor;
+        const h = 6 * scaleFactor;
     
         const x = r * Math.cos(v * 2 * Math.PI);
         const y = h * (u - 0.5);
@@ -398,8 +400,8 @@ function createSeatGeometries(){
 
     // Cone
     geometries.push(function cone(u, v, target) {
-        const r = 2;
-        const h = 4;
+        const r = 2 * scaleFactor;
+        const h = 4 * scaleFactor;
     
         const x = (1 - u) * r * Math.cos(v * 2 * Math.PI);
         const y = h * (u - 0.5);
@@ -410,9 +412,9 @@ function createSeatGeometries(){
 
     // Tronco de Cone
     geometries.push(function truncatedCone(u, v, target) {
-        const rT = 1;
-        const rB= 2;
-        const h = 4;
+        const rT = 1 * scaleFactor;
+        const rB= 2 * scaleFactor;
+        const h = 4 * scaleFactor;
     
         const r = (1 - u) * rB + u * rT;
         const x = r * Math.cos(v * 2 * Math.PI);
@@ -424,8 +426,8 @@ function createSeatGeometries(){
 
     // Toroide
     geometries.push(function torus(u, v, target) {
-        const R = 3;
-        const r = 0.75;
+        const R = 3 * scaleFactor;
+        const r = 0.75 * scaleFactor;
 
         u *= 2 * Math.PI;
         v *= 2 * Math.PI;
@@ -439,9 +441,9 @@ function createSeatGeometries(){
 
     // Hiperboloide de uma Folha
     geometries.push(function hyperboloidOneSheet(u, v, target) {
-        const a = 0.375;
-        const b = 0.375;
-        const c = 0.75;
+        const a = 0.375 * scaleFactor;
+        const b = 0.375 * scaleFactor;
+        const c = 0.75 * scaleFactor;
     
         v *= 2 * Math.PI;
         u = (u - 0.5) * 4;
@@ -455,8 +457,8 @@ function createSeatGeometries(){
 
     // Cone Inclinado
     geometries.push(function inclinedCone(u, v, target) {
-        const r = 2;
-        const h = 6;
+        const r = 2 * scaleFactor;
+        const h = 6 * scaleFactor;
     
         const x = (1 - u) * r * Math.cos(v * 2 * Math.PI);
         const y = h * (u - 0.5);
@@ -467,9 +469,9 @@ function createSeatGeometries(){
 
     // Parábola
     geometries.push(function paraboloid(u, v, target) {
-        const a = 1.5;
-        const b = 1.5;
-        const c = 1.5;
+        const a = 1.5 * scaleFactor;
+        const b = 1.5 * scaleFactor;
+        const c = 1.5 * scaleFactor; 
 
         u = (u - 0.5) * 2;
         v = (v - 0.5) * 2;
@@ -484,6 +486,15 @@ function createSeatGeometries(){
     return geometries;
 }
 
+function shuffleIndices(){
+    const indices = [0 , 1, 2, 3, 4, 5, 6, 7];
+    for (let i = 0; i < indices.length - 1; i++){
+        const j = Math.floor(Math.random() * (i + 1));
+        [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    return indices
+}
+
 function addSeats(obj, x, y, z, R_ring){
     'use strict';
 
@@ -491,13 +502,15 @@ function addSeats(obj, x, y, z, R_ring){
 
     const angleIncrement = 45;
 
+    const randomIndices = shuffleIndices();
+
     for (let i = 0; i < seatFunctions.length; i++){
         const angle = i * angleIncrement * (Math.PI / 180);
         x = R_ring * Math.cos(angle);
         y = R_ring * Math.sin(angle);
         z = -6;
 
-        let geometry = new ParametricGeometry(seatFunctions[i], 50, 50);
+        let geometry = new ParametricGeometry(seatFunctions[randomIndices[i]], 50, 50);
         let mesh = new THREE.Mesh(geometry, seatMaterial);
 
         mesh.userData.rotationSpeed = 0.005;

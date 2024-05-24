@@ -18,9 +18,23 @@ const meshes = [];
 let mobiusStripMesh;
 
 // Materials
-let carouselMaterial, skydomeMaterial, innerRingMaterial, middleRingMaterial, outerRingMaterial, seatMaterial, mobiusStripMaterial;
-let lambertMaterial, phongMaterial, toonMaterial, normalMaterial, basicMaterial, currentMaterial;
+let /*carouselMaterial,*/ skydomeMaterial/* innerRingMaterial, middleRingMaterial, outerRingMaterial, seatMaterial, mobiusStripMaterial*/;
+let /*lambertMaterial, phongMaterial, toonMaterial, basicMaterial,*/normalMaterial, currentMaterial;
 
+const previousMaterials = new Map();
+const carouselMaterial = 0;     // IDX 0 - CarouselMaterial
+const innerRingMaterial = 1;    // IDX 1 - InnerRingMaterial
+const middleRingMaterial = 2;   // IDX 2 - MiddleRingMaterial
+const outerRingMaterial = 3;    // IDX 3 - OuterRingMaterial
+const mobiusStripMaterial = 4;  // IDX 4 - MobiusStringMaterial
+const seatMaterial = 5;         // IDX 5 - SeatsMaterial
+
+const lambertMaterials = [];    
+const phongMaterials = [];      
+const toonMaterials = [];       
+const basicMaterials = [];      
+                               
+                                
 // Object3Ds
 let carousel, innerRing, middleRing, outerRing;
 
@@ -83,19 +97,44 @@ function createScene(){
 
 function createMaterials() {
     currentMaterial = new THREE.MeshBasicMaterial();
-    carouselMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C});
-    innerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xf9cb9c});
-    middleRingMaterial = new THREE.MeshBasicMaterial({ color: 0xf6b26b});
-    outerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xe69138});
+    //carouselMaterial = new THREE.MeshBasicMaterial({ color: 0xEABE6C});
+    //innerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xf9cb9c});
+    //middleRingMaterial = new THREE.MeshBasicMaterial({ color: 0xf6b26b});
+    //outerRingMaterial = new THREE.MeshBasicMaterial({ color: 0xe69138});
     skydomeMaterial = new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/an_optical_poem.jpg'),
                             side: THREE.DoubleSide, transparent: true, opacity: 0.7});
-    seatMaterial = new THREE.MeshBasicMaterial({ color: 0x741b47, side: THREE.DoubleSide});
-    mobiusStripMaterial = new THREE.MeshBasicMaterial({ color: 0xBE4D25, side: THREE.DoubleSide});
-    lambertMaterial = new THREE.MeshLambertMaterial({ side: THREE.DoubleSide });
-    phongMaterial = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, specular: new THREE.Color(0xffffff), shininess: 30});
-    toonMaterial = new THREE.MeshToonMaterial({ side: THREE.DoubleSide});
-    basicMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide});
-    normalMaterial = new THREE.MeshNormalMaterial();
+    //seatMaterial = new THREE.MeshBasicMaterial({ color: 0x741b47, side: THREE.DoubleSide});
+    //mobiusStripMaterial = new THREE.MeshBasicMaterial({ color: 0xBE4D25, side: THREE.DoubleSide});
+
+    lambertMaterials.push(new THREE.MeshLambertMaterial({ color: 0xEABE6C, side: THREE.DoubleSide }));
+    lambertMaterials.push(new THREE.MeshLambertMaterial({ color: 0xf9cb9c, side: THREE.DoubleSide }));
+    lambertMaterials.push(new THREE.MeshLambertMaterial({ color: 0xf6b26b, side: THREE.DoubleSide }));
+    lambertMaterials.push(new THREE.MeshLambertMaterial({ color: 0xe69138, side: THREE.DoubleSide }));
+    lambertMaterials.push(new THREE.MeshLambertMaterial({ color: 0xBE4D25, side: THREE.DoubleSide }));
+    lambertMaterials.push(new THREE.MeshLambertMaterial({ color: 0x741b47, side: THREE.DoubleSide }));
+
+    phongMaterials.push(new THREE.MeshPhongMaterial({ color: 0xEABE6C, side: THREE.DoubleSide, specular: new THREE.Color(0xffffff), shininess: 30}));
+    phongMaterials.push(new THREE.MeshPhongMaterial({ color: 0xf9cb9c, side: THREE.DoubleSide, specular: new THREE.Color(0xffffff), shininess: 30}));
+    phongMaterials.push(new THREE.MeshPhongMaterial({ color: 0xf6b26b, side: THREE.DoubleSide, specular: new THREE.Color(0xffffff), shininess: 30}));
+    phongMaterials.push(new THREE.MeshPhongMaterial({ color: 0xe69138, side: THREE.DoubleSide, specular: new THREE.Color(0xffffff), shininess: 30}));
+    phongMaterials.push(new THREE.MeshPhongMaterial({ color: 0xBE4D25, side: THREE.DoubleSide, specular: new THREE.Color(0xffffff), shininess: 30}));
+    phongMaterials.push(new THREE.MeshPhongMaterial({ color: 0x741b47, side: THREE.DoubleSide, specular: new THREE.Color(0xffffff), shininess: 30}));
+
+    toonMaterials.push(new THREE.MeshToonMaterial({ color: 0xEABE6C , side: THREE.DoubleSide}));
+    toonMaterials.push(new THREE.MeshToonMaterial({ color: 0xf9cb9c , side: THREE.DoubleSide}));
+    toonMaterials.push(new THREE.MeshToonMaterial({ color: 0xf6b26b , side: THREE.DoubleSide}));
+    toonMaterials.push(new THREE.MeshToonMaterial({ color: 0xe69138 , side: THREE.DoubleSide}));
+    toonMaterials.push(new THREE.MeshToonMaterial({ color: 0xBE4D25 , side: THREE.DoubleSide}));
+    toonMaterials.push(new THREE.MeshToonMaterial({ color: 0x741b47 , side: THREE.DoubleSide}));
+
+    basicMaterials.push(new THREE.MeshBasicMaterial({ color: 0xEABE6C , side: THREE.DoubleSide}));
+    basicMaterials.push(new THREE.MeshBasicMaterial({ color: 0xf9cb9c , side: THREE.DoubleSide}));
+    basicMaterials.push(new THREE.MeshBasicMaterial({ color: 0xf6b26b , side: THREE.DoubleSide}));
+    basicMaterials.push(new THREE.MeshBasicMaterial({ color: 0xe69138 , side: THREE.DoubleSide}));
+    basicMaterials.push(new THREE.MeshBasicMaterial({ color: 0xBE4D25 , side: THREE.DoubleSide}));
+    basicMaterials.push(new THREE.MeshBasicMaterial({ color: 0x741b47 , side: THREE.DoubleSide}));
+
+    normalMaterial = new THREE.MeshNormalMaterial({ side: THREE.DoubleSide });
 }
 
 //////////////////////
@@ -182,17 +221,17 @@ function createCarousel(x, y, z) {
     //createMiddleRing(carousel, 0, h_cylinder + 2*h_ring, 0);
     //createOuterRing(carousel, 0, h_cylinder + 3*h_ring, 0);
 
-    innerRing = createCarouselRing(carousel, 0, h_cylinder + h_ring, 0, outerR_ring1, innerR_ring1, 4, innerRingMaterial);
-    middleRing = createCarouselRing(carousel, 0, h_cylinder + 2*h_ring, 0, outerR_ring2, innerR_ring2, 3, middleRingMaterial);
-    outerRing = createCarouselRing(carousel, 0, h_cylinder + 3*h_ring, 0, outerR_ring3, innerR_ring3, 2, outerRingMaterial);
+    innerRing = createCarouselRing(carousel, 0, h_cylinder + h_ring, 0, outerR_ring1, innerR_ring1, 4, basicMaterials[innerRingMaterial], 1);
+    middleRing = createCarouselRing(carousel, 0, h_cylinder + 2*h_ring, 0, outerR_ring2, innerR_ring2, 3, basicMaterials[middleRingMaterial], 2);
+    outerRing = createCarouselRing(carousel, 0, h_cylinder + 3*h_ring, 0, outerR_ring3, innerR_ring3, 2, basicMaterials[outerRingMaterial], 3);
 }
 
 function addCentralCylinder(obj, x, y, z, r, h) {
     'use strict';
     // CylinderGeometry(radiusTop, radiusBottom, height, radialSegments)
     let geometry = new THREE.CylinderGeometry(r, r, h, 64);
-    let cylinderMesh = new THREE.Mesh(geometry, carouselMaterial);
-    cylinderMesh.userData.originalColor = carouselMaterial.color.clone();
+    let cylinderMesh = new THREE.Mesh(geometry, basicMaterials[carouselMaterial]);
+    cylinderMesh.userData.index = 0; 
     meshes.push(cylinderMesh);
     cylinderMesh.position.set(x, y, z);
     obj.add(cylinderMesh);
@@ -275,9 +314,10 @@ function addMobiusStrip(obj, x, y, z) {
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geometry.computeVertexNormals();
 
-    mobiusStripMesh = new THREE.Mesh(geometry, mobiusStripMaterial);
-    mobiusStripMesh.userData.originalColor = mobiusStripMaterial.color.clone();
+    mobiusStripMesh = new THREE.Mesh(geometry, basicMaterials[mobiusStripMaterial]);
+    mobiusStripMesh.userData.index = 4;
     mobiusStripMesh.position.set(x, y, z);
+    meshes.push(mobiusStripMesh);
     obj.add(mobiusStripMesh);
 }
 
@@ -311,12 +351,12 @@ function createMiddleRing(obj, x, y, z) {
 
 }
 
-function createCarouselRing(obj, x, y, z, outerRadius, innerRadius, speed, material) {
+function createCarouselRing(obj, x, y, z, outerRadius, innerRadius, speed, material, idx) {
     'use strict';
 
     let ring = new THREE.Object3D();
     ring.userData = { verticalSpeed: speed };
-    addRing(ring, 0, 0, 0, outerRadius, innerRadius, h_ring, material);
+    addRing(ring, 0, 0, 0, outerRadius, innerRadius, h_ring, material, idx);
     ring.rotation.x = Math.PI / 2;
     ring.position.set(x, y, z);
 
@@ -341,7 +381,7 @@ function createOuterRing(obj, x, y, z) {
     obj.add(outerRing);
 }
 
-function addRing(obj, x, y, z, outerRadius, innerRadius, h, mat) {
+function addRing(obj, x, y, z, outerRadius, innerRadius, h, mat, idx) {
     'use strict';
     let shape = new THREE.Shape();
     shape.moveTo(outerRadius, 0);
@@ -360,7 +400,7 @@ function addRing(obj, x, y, z, outerRadius, innerRadius, h, mat) {
 
     let ringGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
     let mesh = new THREE.Mesh(ringGeometry, mat);
-    mesh.userData.originalColor = mat.color.clone();
+    mesh.userData.index = idx;
     meshes.push(mesh);
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -511,11 +551,11 @@ function addSeats(obj, x, y, z, R_ring){
         z = -6;
 
         let geometry = new ParametricGeometry(seatFunctions[randomIndices[i]], 50, 50);
-        let mesh = new THREE.Mesh(geometry, seatMaterial);
+        let mesh = new THREE.Mesh(geometry, basicMaterials[seatMaterial]);
 
+        mesh.userData.index = 5;
         mesh.userData.rotationSpeed = 0.005;
         mesh.userData.rotateAxis = new THREE.Vector3(Math.random() * 0.1 + 1, 1, 0).normalize();
-        mesh.userData.originalColor = seatMaterial.color.clone();
         mesh.name = "seat";
 
         mesh.position.set(x, y, z);
@@ -705,78 +745,47 @@ function onKeyDown(e) {
             break;
         case 81: // Q/q
             meshes.forEach(mesh => {
-                newColor = mesh.userData.originalColor.clone()
-                mesh.material = lambertMaterial.clone();
-                mesh.material.color.copy(newColor);
+                mesh.material = lambertMaterials[mesh.userData.index];
             });
-            newColor = mobiusStripMesh.userData.originalColor.clone();
-            mobiusStripMesh.material = lambertMaterial.clone();
-            mobiusStripMesh.material.color.copy(newColor);
 
             reactingToLight = true;
-            currentMaterial = lambertMaterial;
+            currentMaterial = lambertMaterials;
             break;
         case 87: // W/w
             meshes.forEach(mesh => {
-                newColor = mesh.userData.originalColor.clone();
-                mesh.material = phongMaterial.clone();
-                mesh.material.color.copy(newColor);
-
+                mesh.material = phongMaterials[mesh.userData.index];
             });
-            newColor = mobiusStripMesh.userData.originalColor.clone()
-            mobiusStripMesh.material = phongMaterial.clone();
-            mobiusStripMesh.material.color.copy(newColor);
-
             reactingToLight = true;
-            currentMaterial = phongMaterial;
+            currentMaterial = phongMaterials;
             break;
         case 69: // E/e
             meshes.forEach(mesh => {
-                newColor = mesh.userData.originalColor.clone()
-                mesh.material = toonMaterial.clone();
-                mesh.material.color.copy(newColor);
+                mesh.material = toonMaterials[mesh.userData.index];
             });
-            newColor = mobiusStripMesh.userData.originalColor.clone();
-            mobiusStripMesh.material = toonMaterial;
-            mobiusStripMesh.material.color.copy(newColor);
 
             reactingToLight = true;
-            currentMaterial = toonMaterial;
+            currentMaterial = toonMaterials;
             break;
         case 82: // R/r
             meshes.forEach(mesh => {
-                mesh.material = normalMaterial.clone();
+                mesh.material = normalMaterial;
             });
-            mobiusStripMesh.material = normalMaterial.clone();
 
             reactingToLight = true;
-            currentMaterial = normalMaterial;
+            currentMaterial = [normalMaterial];
             break;
         case 84: // T/t
             if (reactingToLight) {
                 meshes.forEach(mesh => {
-                    newColor = mesh.userData.originalColor.clone()
-                    mesh.material = basicMaterial.clone();
-                    mesh.material.color.copy(newColor);
-                })
-                newColor = mobiusStripMesh.userData.originalColor.clone()
-                mobiusStripMesh.material = basicMaterial.clone();
-                mobiusStripMesh.material.color.copy(newColor);
+                    previousMaterials.set(mesh, mesh.material);
+                    mesh.material = basicMaterials[mesh.userData.index];
+                });
 
                 reactingToLight = false;
             } else {
                 meshes.forEach(mesh => {
-                    newColor = mesh.userData.originalColor.clone();
-                    let newMaterial = currentMaterial.clone();
-                    newMaterial.color = newColor;
-                    newMaterial.side = THREE.DoubleSide;
-                    mesh.material = newMaterial;
+                    mesh.material = previousMaterials.get(mesh);
                 })
-                newColor = mobiusStripMesh.userData.originalColor.clone()
-                let newMaterial = currentMaterial.clone();
-                newMaterial.color = newColor;
-                newMaterial.side = THREE.DoubleSide;
-                mobiusStripMesh.material = newMaterial;
 
                 reactingToLight = true;
             }

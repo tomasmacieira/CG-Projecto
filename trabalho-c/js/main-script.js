@@ -10,7 +10,7 @@ import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.j
 //////////////////////
 
 // Cameras, scene, renderer and clock
-let perspectiveCamera, stereoCamera;
+let perspectiveCamera;
 let scene, renderer, clock;
 
 // Meshes
@@ -70,6 +70,7 @@ function createScene(){
     scene.background = new THREE.Color(0xb8cef2);
     let floor = new THREE.Mesh(new THREE.CylinderGeometry(r_skydome, r_skydome, 0.5), new THREE.MeshBasicMaterial({color: 0x383eae, side: THREE.DoubleSide}));
     scene.add(floor);
+    scene.position.set(0, -h_cylinder - 3*h_ring, 0)
 
     createDirectionalLight();
     createAmbientLight();
@@ -100,14 +101,8 @@ function createPerspectiveCamera() {
     // PerspectiveCamera(fov, aspect, near, far)
     perspectiveCamera = new THREE.PerspectiveCamera(70,
         window.innerWidth / window.innerHeight, 1, 1000);
-    perspectiveCamera.position.set(50, 65, 40);
+    perspectiveCamera.position.set(50, 65 - h_cylinder - 3*h_ring, 40);
     perspectiveCamera.lookAt(scene.position);
-}
-
-function createStereoCamera() {
-    'use strict';
-    // StereoCamera()
-    stereoCamera = new THREE.StereoCamera();
 }
 
 /////////////////////
@@ -623,7 +618,6 @@ function init() {
     
     createScene();
     createPerspectiveCamera();
-    createStereoCamera();
 
     const controls = new OrbitControls(perspectiveCamera, renderer.domElement);
 
@@ -708,7 +702,10 @@ function onKeyDown(e) {
             meshes.forEach(mesh => {
                 newColor = mesh.userData.originalColor.clone()
                 phongMaterial = new THREE.MeshPhongMaterial({ color: newColor, side: THREE.DoubleSide});
+                phongMaterial.specular = new THREE.Color(0xffffff);
+                phongMaterial.shininess = 30;
                 mesh.material = phongMaterial;
+
             });
             newColor = mobiusStripMesh.userData.originalColor.clone()
             phongMaterial = new THREE.MeshPhongMaterial({ color: newColor, side: THREE.DoubleSide});
